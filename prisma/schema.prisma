@@ -1,0 +1,1184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  password      String?
+  role          UserRole  @default(STUDENT)
+  isActive      Boolean   @default(true)
+  lastLogin     DateTime?
+  isTwoFactorEnabled Boolean @default(false)
+  
+  // Profile Enhancement
+  bio           String?
+  phone         String?
+  dateOfBirth   DateTime?
+  gender        Gender?
+  address       Json?     // Flexible address structure
+  
+  // Social Links
+  socialLinks   Json?     // GitHub, LinkedIn, Twitter, etc.
+  
+  // Preferences & Settings
+  preferences   Json?     // Theme, notifications, privacy settings
+  timezone      String    @default("UTC")
+  language      String    @default("en")
+  
+  // Relationships
+  accounts      Account[]
+  sessions      Session[]
+  student       Student?
+  teacher       Teacher?
+  admin         Admin?
+  
+  // Activity Tracking
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model TwoFactorToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+
+  @@unique([email, token])
+}
+
+// ============================================================================
+// ROLE-SPECIFIC PROFILES
+// ============================================================================
+
+model Student {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  studentId       String          @unique
+  semester        Int
+  cgpa            Float?          @default(0.0)
+  batch           String
+  section         String?
+  
+  // Academic Status
+  admissionYear   Int
+  expectedGradYear Int
+  status          StudentStatus   @default(ACTIVE)
+  
+  // Emergency Contact
+  emergencyContact Json?
+  
+  // Academic Records
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments     Enrollment[]
+  submissions     Submission[]
+  grades          Grade[]
+  attendanceRecords AttendanceRecord[]
+  
+  // Wellness & Tracking
+  wellnessData    WellnessData[]
+  achievements    Achievement[]
+  certifications  Certification[]
+  skillAssessments SkillAssessment[]
+  
+  // Community
+  mentorships     Mentorship[]    @relation("StudentMentorships")
+  studyGroups     StudyGroupMember[]
+  forumPosts      ForumPost[]
+  forumComments   ForumComment[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  meditationSessions MeditationSession[]
+  habitTrackers      HabitTracker[]
+  learningAnalytics  LearningAnalytics[]
+  userAssignments    UserAssignment[] // Added UserAssignment relation
+  @@map("students")
+}
+
+model UserAssignment {
+  id            String          @id @default(cuid())
+  userId        String
+  assignmentId  String
+  status        SubmissionStatus @default(DRAFT) // Assuming a status for user's assignment progress
+  
+  user          User            @relation(fields: [userId], references: [id])
+  assignment    Assignment      @relation(fields: [assignmentId], references: [id])
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([userId, assignmentId])
+  @@map("user_assignments")
+}
+
+model Teacher {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  employeeId      String          @unique
+  department      String
+  designation     String
+  
+  // Professional Details
+  qualification   String[]
+  experience      Int             // Years of experience
+  expertise       String[]        // Areas of expertise
+  
+  // Academic Relations
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courses         Course[]
+  assignments     Assignment[]
+  grades          Grade[]
+  
+  // Mentorship
+  mentorships     Mentorship[]    @relation("TeacherMentorships")
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("teachers")
+}
+
+model Admin {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  adminLevel      AdminLevel      @default(INSTITUTION)
+  permissions     Json            // Flexible permissions system
+  
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("admins")
+}
+
+// ============================================================================
+// ACADEMIC MANAGEMENT
+// ============================================================================
+
+model Course {
+  id              String          @id @default(cuid())
+  courseCode      String          @unique
+  title           String
+  description     String?
+  credits         Int
+  semester        Int
+  department      String
+  
+  // Course Details
+  syllabus        String?         // Rich text or file URL
+  prerequisites   String[]        // Course codes
+  objectives      String[]
+  
+  // Instructor
+  teacherId       String
+  teacher         Teacher         @relation(fields: [teacherId], references: [id])
+  
+  // Academic Relations
+  enrollments     Enrollment[]
+  assignments     Assignment[]
+  resources       Resource[]
+  announcements   Announcement[]
+  attendanceRecords AttendanceRecord[]
+  
+  // Scheduling
+  schedule        Json?           // Class timings and venue
+  
+  // Status
+  isActive        Boolean         @default(true)
+  academicYear    String
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  studyGroups StudyGroup[]
+  @@map("courses")
+}
+
+model Enrollment {
+  id              String          @id @default(cuid())
+  studentId       String
+  courseId        String
+  enrollmentDate  DateTime        @default(now())
+  status          EnrollmentStatus @default(ENROLLED)
+  
+  // Academic Performance
+  midtermGrade    Float?
+  finalGrade      Float?
+  overallGrade    Float?
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  course          Course          @relation(fields: [courseId], references: [id])
+  
+  @@unique([studentId, courseId])
+  @@map("enrollments")
+}
+
+model Assignment {
+  id              String          @id @default(cuid())
+  title           String
+  description     String
+  courseId        String
+  teacherId       String
+  
+  // Assignment Details
+  type            AssignmentType  @default(HOMEWORK)
+  maxMarks        Float
+  instructions    String?
+  attachments     Json?           // File URLs
+  
+  // Timing
+  assignedDate    DateTime        @default(now())
+  dueDate         DateTime
+  submissionOpen  Boolean         @default(true)
+  
+  // Relations
+  course          Course          @relation(fields: [courseId], references: [id])
+  teacher         Teacher         @relation(fields: [teacherId], references: [id])
+  submissions     Submission[]
+  grades          Grade[]
+  userAssignments UserAssignment[] // Added UserAssignment relation
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("assignments")
+}
+
+model Submission {
+  id              String          @id @default(cuid())
+  assignmentId    String
+  studentId       String
+  
+  // Submission Content
+  content         String?         // Text submission
+  attachments     Json?           // File URLs
+  
+  // Metadata
+  submittedAt     DateTime        @default(now())
+  isLate          Boolean         @default(false)
+  status          SubmissionStatus @default(SUBMITTED)
+  
+  // Plagiarism & AI Detection
+  plagiarismScore Float?
+  aiDetectionScore Float?
+  
+  assignment      Assignment      @relation(fields: [assignmentId], references: [id])
+  student         Student         @relation(fields: [studentId], references: [id])
+  
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([assignmentId, studentId])
+  @@map("submissions")
+}
+
+model Grade {
+  id              String          @id @default(cuid())
+  assignmentId    String
+  studentId       String
+  teacherId       String
+  
+  // Grading
+  marksObtained   Float
+  maxMarks        Float
+  percentage      Float
+  letterGrade     String?
+  
+  // Feedback
+  feedback        String?
+  rubricData      Json?           // Detailed rubric breakdown
+  
+  // Metadata
+  gradedAt        DateTime        @default(now())
+  isPublished     Boolean         @default(false)
+  
+  assignment      Assignment      @relation(fields: [assignmentId], references: [id])
+  student         Student         @relation(fields: [studentId], references: [id])
+  teacher         Teacher         @relation(fields: [teacherId], references: [id])
+  
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([assignmentId, studentId])
+  @@map("grades")
+}
+
+model AttendanceRecord {
+  id              String          @id @default(cuid())
+  studentId       String
+  courseId        String
+  date            DateTime        @db.Date
+  status          AttendanceStatus @default(PRESENT)
+  
+  // Additional Info
+  checkedInAt     DateTime?
+  checkedOutAt    DateTime?
+  location        String?         // Classroom/Lab
+  notes           String?
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  course          Course          @relation(fields: [courseId], references: [id])
+  
+  @@unique([studentId, courseId, date])
+  @@map("attendance_records")
+}
+
+// ============================================================================
+// RESOURCES & CONTENT MANAGEMENT
+// ============================================================================
+
+model Resource {
+  id              String          @id @default(cuid())
+  title           String
+  description     String?
+  courseId        String
+  type            ResourceType    @default(DOCUMENT)
+  
+  // File Information
+  fileUrl         String
+  fileName        String
+  fileSize        Int?            // in bytes
+  mimeType        String?
+  
+  // Metadata
+  category        String?         // Lecture Notes, Lab Manual, etc.
+  tags            String[]
+  downloadCount   Int             @default(0)
+  
+  course          Course          @relation(fields: [courseId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("resources")
+}
+
+model Announcement {
+  id              String          @id @default(cuid())
+  title           String
+  content         String
+  courseId        String?         // Null for institution-wide announcements
+  priority        Priority        @default(MEDIUM)
+  
+  // Metadata
+  isPublished     Boolean         @default(true)
+  publishedAt     DateTime        @default(now())
+  expiresAt       DateTime?
+  
+  // Rich Content
+  attachments     Json?
+  tags            String[]
+  
+  course          Course?         @relation(fields: [courseId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("announcements")
+}
+
+// ============================================================================
+// SKILLS & CERTIFICATION MANAGEMENT
+// ============================================================================
+
+model Skill {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  category        SkillCategory
+  description     String?
+  
+  // Skill Metadata
+  difficulty      DifficultyLevel @default(BEGINNER)
+  prerequisites   String[]        // Other skill names
+  tags            String[]
+  
+  // Industry Relevance
+  marketDemand    Float?          // 0-100 scale
+  averageSalary   Float?
+  
+  skillAssessments SkillAssessment[]
+  certifications  Certification[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("skills")
+}
+
+model SkillAssessment {
+  id              String          @id @default(cuid())
+  studentId       String
+  skillId         String
+  
+  // Assessment Results
+  currentLevel    SkillLevel      @default(BEGINNER)
+  scorePercentage Float
+  assessmentData  Json?           // Detailed breakdown
+  
+  // Progress Tracking
+  previousLevel   SkillLevel?
+  improvementRate Float?          // Percentage improvement
+  
+  // Metadata
+  assessedAt      DateTime        @default(now())
+  validUntil      DateTime?       // Skill assessments can expire
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  skill           Skill           @relation(fields: [skillId], references: [id])
+  
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([studentId, skillId])
+  @@map("skill_assessments")
+}
+
+model Certification {
+  id              String          @id @default(cuid())
+  studentId       String
+  skillId         String?
+  
+  // Certification Details
+  title           String
+  issuer          String          // Google, AWS, Microsoft, etc.
+  certificationId String?         // External certification ID
+  
+  // Verification
+  verificationUrl String?
+  isVerified      Boolean         @default(false)
+  credentialHash  String?         // Blockchain verification
+  
+  // Dates
+  issuedDate      DateTime
+  expiryDate      DateTime?
+  
+  // Metadata
+  category        CertificationCategory
+  level           SkillLevel      @default(BEGINNER)
+  description     String?
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  skill           Skill?          @relation(fields: [skillId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("certifications")
+}
+
+model Achievement {
+  id              String          @id @default(cuid())
+  studentId       String
+  title           String
+  description     String
+  type            AchievementType
+  
+  // Achievement Metadata
+  iconUrl         String?
+  badgeColor      String?         // Hex color for badge
+  category        String
+  
+  // Scoring
+  points          Int             @default(0)
+  rarity          RarityLevel     @default(COMMON)
+  
+  // Conditions & Requirements
+  requirements    Json?           // Complex requirement structure
+  progress        Json?           // Current progress toward achievement
+  
+  // Status
+  unlockedAt      DateTime?
+  isVisible       Boolean         @default(true)
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("achievements")
+}
+
+// ============================================================================
+// WELLNESS & MENTAL HEALTH
+// ============================================================================
+
+model WellnessData {
+  id              String          @id @default(cuid())
+  studentId       String
+  date            DateTime        @db.Date
+  
+  // Mood & Mental Health
+  moodScore       Int?            // 1-10 scale
+  stressLevel     Int?            // 1-10 scale
+  anxietyLevel    Int?            // 1-10 scale
+  energyLevel     Int?            // 1-10 scale
+  
+  // Sleep Data
+  sleepHours      Float?
+  sleepQuality    Int?            // 1-10 scale
+  bedtime         DateTime?
+  wakeupTime      DateTime?
+  
+  // Physical Activity
+  exerciseMinutes Int?            @default(0)
+  steps           Int?
+  
+  // Digital Wellness
+  screenTimeMinutes Int?          @default(0)
+  productiveMinutes Int?          @default(0)
+  socialMediaMinutes Int?         @default(0)
+  
+  // Mindfulness
+  meditationMinutes Int?          @default(0)
+  breathingExercises Int?         @default(0)
+  
+  // Study Metrics
+  studyMinutes    Int?            @default(0)
+  focusScore      Int?            // 1-10 scale
+  pomodoroCount   Int?            @default(0)
+  
+  // Notes
+  dailyReflection String?
+  gratitudeNotes  String[]
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([studentId, date])
+  @@map("wellness_data")
+}
+
+model MeditationSession {
+  id              String          @id @default(cuid())
+  studentId       String
+  
+  // Session Details
+  title           String
+  duration        Int             // in minutes
+  category        MeditationType  @default(MINDFULNESS)
+  
+  // Progress
+  completed       Boolean         @default(false)
+  completedAt     DateTime?
+  
+  // Session Data
+  audioUrl        String?
+  instructorName  String?
+  difficulty      DifficultyLevel @default(BEGINNER)
+  
+  // Feedback
+  rating          Int?            // 1-5 stars
+  feedback        String?
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  
+  @@map("meditation_sessions")
+}
+
+model HabitTracker {
+  id              String          @id @default(cuid())
+  studentId       String
+  habitName       String
+  category        HabitCategory   @default(WELLNESS)
+  
+  // Habit Configuration
+  targetFrequency String          // daily, weekly, etc.
+  targetValue     Int?            // for quantifiable habits
+  unit            String?         // minutes, count, etc.
+  
+  // Progress
+  currentStreak   Int             @default(0)
+  longestStreak   Int             @default(0)
+  completionRate  Float           @default(0.0)
+  
+  // Status
+  isActive        Boolean         @default(true)
+  startDate       DateTime        @default(now())
+  endDate         DateTime?
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  completions     HabitCompletion[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("habit_trackers")
+}
+
+model HabitCompletion {
+  id              String          @id @default(cuid())
+  habitId         String
+  date            DateTime        @db.Date
+  completed       Boolean         @default(true)
+  value           Int?            // for quantifiable habits
+  notes           String?
+  
+  habit           HabitTracker    @relation(fields: [habitId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  
+  @@unique([habitId, date])
+  @@map("habit_completions")
+}
+
+// ============================================================================
+// COMMUNITY & SOCIAL FEATURES
+// ============================================================================
+
+model StudyGroup {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  courseId        String?         // Optional: group can be course-specific
+  
+  // Group Settings
+  isPublic        Boolean         @default(true)
+  maxMembers      Int             @default(10)
+  currentMembers  Int             @default(0)
+  
+  // Metadata
+  tags            String[]
+  category        String?
+  
+  course          Course?         @relation(fields: [courseId], references: [id])
+  members         StudyGroupMember[]
+  sessions        StudySession[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("study_groups")
+}
+
+model StudyGroupMember {
+  id              String          @id @default(cuid())
+  studentId       String
+  studyGroupId    String
+  role            GroupRole       @default(MEMBER)
+  
+  joinedAt        DateTime        @default(now())
+  isActive        Boolean         @default(true)
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  studyGroup      StudyGroup      @relation(fields: [studyGroupId], references: [id])
+  
+  @@unique([studentId, studyGroupId])
+  @@map("study_group_members")
+}
+
+model StudySession {
+  id              String          @id @default(cuid())
+  studyGroupId    String
+  title           String
+  description     String?
+  
+  // Session Timing
+  scheduledAt     DateTime
+  duration        Int             // in minutes
+  location        String?         // Physical or virtual
+  meetingUrl      String?         // For virtual sessions
+  
+  // Status
+  status          SessionStatus   @default(SCHEDULED)
+  attendeeCount   Int             @default(0)
+  
+  studyGroup      StudyGroup      @relation(fields: [studyGroupId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("study_sessions")
+}
+
+model Mentorship {
+  id              String          @id @default(cuid())
+  mentorId        String          // Teacher ID
+  menteeId        String          // Student ID
+  
+  // Mentorship Details
+  focus           String[]        // Areas of focus
+  goals           String[]        // Mentorship goals
+  status          MentorshipStatus @default(ACTIVE)
+  
+  // Progress
+  sessionsCompleted Int           @default(0)
+  nextSessionAt   DateTime?
+  
+  // Feedback
+  menteeRating    Int?            // 1-5 stars
+  mentorRating    Int?            // 1-5 stars
+  
+  mentor          Teacher         @relation("TeacherMentorships", fields: [mentorId], references: [id])
+  mentee          Student         @relation("StudentMentorships", fields: [menteeId], references: [id])
+  sessions        MentorshipSession[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([mentorId, menteeId])
+  @@map("mentorships")
+}
+
+model MentorshipSession {
+  id              String          @id @default(cuid())
+  mentorshipId    String
+  
+  // Session Details
+  title           String
+  description     String?
+  scheduledAt     DateTime
+  duration        Int             // in minutes
+  
+  // Content
+  agenda          String[]
+  notes           String?
+  actionItems     String[]
+  
+  // Status
+  status          SessionStatus   @default(SCHEDULED)
+  completedAt     DateTime?
+  
+  mentorship      Mentorship      @relation(fields: [mentorshipId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("mentorship_sessions")
+}
+
+model Forum {
+  id              String          @id @default(cuid())
+  name            String
+  description     String
+  category        String
+  
+  // Forum Settings
+  isPublic        Boolean         @default(true)
+  requiresApproval Boolean        @default(false)
+  
+  posts           ForumPost[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("forums")
+}
+
+model ForumPost {
+  id              String          @id @default(cuid())
+  forumId         String
+  authorId        String
+  title           String
+  content         String
+  
+  // Post Metadata
+  isPinned        Boolean         @default(false)
+  isLocked        Boolean         @default(false)
+  tags            String[]
+  
+  // Engagement
+  views           Int             @default(0)
+  likes           Int             @default(0)
+  
+  forum           Forum           @relation(fields: [forumId], references: [id])
+  author          Student         @relation(fields: [authorId], references: [id])
+  comments        ForumComment[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id              String          @id @default(cuid())
+  postId          String
+  authorId        String
+  content         String
+  parentId        String?         // For threaded comments
+  
+  // Engagement
+  likes           Int             @default(0)
+  
+  post            ForumPost       @relation(fields: [postId], references: [id])
+  author          Student         @relation(fields: [authorId], references: [id])
+  parent          ForumComment?   @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         ForumComment[]  @relation("CommentReplies")
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("forum_comments")
+}
+
+// ============================================================================
+// AI & ANALYTICS
+// ============================================================================
+
+model AIInteraction {
+  id              String          @id @default(cuid())
+  userId          String
+  type            AIInteractionType
+  
+  // Interaction Content
+  query           String
+  response        String
+  context         Json?           // Additional context data
+  
+  // Metadata
+  model           String          // AI model used
+  tokensUsed      Int?
+  responseTime    Int?            // in milliseconds
+  
+  // Quality Metrics
+  userRating      Int?            // 1-5 stars
+  wasHelpful      Boolean?
+  
+  createdAt       DateTime        @default(now())
+  
+  @@map("ai_interactions")
+}
+
+model LearningAnalytics {
+  id              String          @id @default(cuid())
+  studentId       String
+  date            DateTime        @db.Date
+  
+  // Learning Metrics
+  studyMinutes    Int             @default(0)
+  completedTasks  Int             @default(0)
+  averageScore    Float?
+  
+  // Engagement Metrics
+  loginCount      Int             @default(0)
+  pageViews       Int             @default(0)
+  timeOnPlatform  Int             @default(0) // minutes
+  
+  // Performance Predictions
+  gpaForecast     Float?
+  riskScore       Float?          // Risk of academic failure
+  engagementScore Float?          // Overall engagement score
+  
+  student         Student         @relation(fields: [studentId], references: [id])
+  
+  @@unique([studentId, date])
+  @@map("learning_analytics")
+}
+
+// ============================================================================
+// NOTIFICATIONS & SYSTEM
+// ============================================================================
+
+model Notification {
+  id              String          @id @default(cuid())
+  userId          String
+  title           String
+  message         String
+  type            NotificationType @default(INFO)
+  
+  // Notification Metadata
+  category        String?
+  priority        Priority        @default(MEDIUM)
+  actionUrl       String?         // Deep link URL
+  
+  // Status
+  isRead          Boolean         @default(false)
+  readAt          DateTime?
+  
+  // Rich Content
+  metadata        Json?           // Additional data
+  imageUrl        String?
+  
+  // Scheduling
+  scheduledAt     DateTime?       // For future notifications
+  expiresAt       DateTime?
+  
+  createdAt       DateTime        @default(now())
+  
+  @@map("notifications")
+}
+
+model SystemConfiguration {
+  id              String          @id @default(cuid())
+  key             String          @unique
+  value           Json
+  description     String?
+  category        String          @default("general")
+  
+  // Metadata
+  isPublic        Boolean         @default(false)
+  dataType        String          @default("string") // string, number, boolean, object, array
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@map("system_configurations")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+  SUPER_ADMIN
+  MENTOR
+  COUNSELOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  GRADUATED
+  DROPPED_OUT
+}
+
+enum AdminLevel {
+  INSTITUTION
+  DEPARTMENT
+  COURSE
+  SYSTEM
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  COMPLETED
+  DROPPED
+  FAILED
+  TRANSFERRED
+}
+
+enum AssignmentType {
+  HOMEWORK
+  LAB
+  PROJECT
+  QUIZ
+  EXAM
+  PRESENTATION
+  RESEARCH
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  GRADED
+  RETURNED
+  RESUBMIT_REQUIRED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+  PARTIAL
+}
+
+enum ResourceType {
+  DOCUMENT
+  VIDEO
+  AUDIO
+  IMAGE
+  CODE
+  LINK
+  INTERACTIVE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SkillCategory {
+  PROGRAMMING
+  DATA_SCIENCE
+  WEB_DEVELOPMENT
+  MOBILE_DEVELOPMENT
+  DEVOPS
+  DESIGN
+  MARKETING
+  SOFT_SKILLS
+  ACADEMIC
+  CERTIFICATION
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SkillLevel {
+  BEGINNER
+  NOVICE
+  INTERMEDIATE
+  PROFICIENT
+  ADVANCED
+  EXPERT
+  MASTER
+}
+
+enum CertificationCategory {
+  TECHNICAL
+  PROFESSIONAL
+  ACADEMIC
+  INDUSTRY
+  LANGUAGE
+  SOFT_SKILLS
+}
+
+enum AchievementType {
+  ACADEMIC
+  SKILL
+  WELLNESS
+  COMMUNITY
+  MILESTONE
+  SPECIAL
+  SEASONAL
+}
+
+enum RarityLevel {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum MeditationType {
+  MINDFULNESS
+  BREATHING
+  BODY_SCAN
+  LOVING_KINDNESS
+  FOCUS
+  SLEEP
+  STRESS_RELIEF
+  ANXIETY
+}
+
+enum HabitCategory {
+  WELLNESS
+  STUDY
+  EXERCISE
+  MINDFULNESS
+  SOCIAL
+  CAREER
+  PERSONAL
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum AIInteractionType {
+  STUDY_HELP
+  CAREER_GUIDANCE
+  WELLNESS_SUPPORT
+  GENERAL_QUERY
+  CODE_REVIEW
+  ASSIGNMENT_HELP
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  REMINDER
+  ACHIEVEMENT
+  SOCIAL
+  SYSTEM
+}
