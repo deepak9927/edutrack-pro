@@ -1,6 +1,104 @@
-# Cloud Deployment Guide for EduTrack Pro
+# Supabase + Azure Deployment Guide (FASTEST PATH - 30 MINUTES)
 
-## Option 1: Vercel (Recommended - Free Tier)
+**Best for students:** FREE forever, no credit card needed!
+
+---
+
+## 🎯 Recommended: Supabase + Azure Static Web Apps
+
+**Why this combo:**
+- ✅ Both have generous FREE tiers
+- ✅ No credit card needed
+- ✅ PostgreSQL (your schema works as-is!)
+- ✅ Auto-deploys from GitHub
+- ✅ Production-grade
+
+---
+
+## 📋 Quick Start (30 minutes total)
+
+### Step 1: Set Up Supabase Database (5 min)
+
+1. Go to **[supabase.com](https://supabase.com)** → Sign up with GitHub
+2. Click **"New Project"**
+3. Fill in:
+   - Name: `edutrack-pro`
+   - Password: Click "Generate" → **SAVE THIS!** 📝
+   - Region: South Asia (Mumbai) or Southeast Asia
+   - Plan: Free
+4. Click **"Create new project"** (wait 2 min)
+5. Go to **Project Settings** → **Database** → **Connection string** → **URI** tab
+6. Copy connection string:
+   ```
+   postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+   ```
+7. Replace `[YOUR-PASSWORD]` with your saved password
+
+### Step 2: Test Locally (2 min)
+
+```bash
+# 1. Update .env.local with your Supabase DATABASE_URL
+# Example:
+# DATABASE_URL="postgresql://postgres.abcd1234:MyPassword@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+
+# 2. Generate Prisma client and push schema
+npx prisma generate
+npx prisma db push
+
+# 3. Test
+pnpm dev
+# Try registering at http://localhost:3000
+```
+
+### Step 3: Deploy to Azure Static Web Apps (10 min)
+
+1. **Create Static Web App:**
+   - Go to [Azure Portal](https://portal.azure.com)
+   - Create resource → "Static Web Apps"
+   - Resource group: Create new → `edutrack-rg`
+   - Name: `edutrack-pro`
+   - Plan: **Free**
+   - Region: Central India
+   - Source: **GitHub**
+   - Org: `deepak9927`
+   - Repo: `edutrack-pro`
+   - Branch: `main`
+   - Build preset: **Next.js**
+   - App location: `/`
+   - Output: `.next`
+   - Click **Create**
+
+2. **Get your app URL:**
+   - Go to Overview → Copy URL (e.g., `https://nice-ocean-abc123.azurestaticapps.net`)
+
+3. **Configure Environment Variables:**
+   - Go to **Configuration** → Add these:
+   ```
+   DATABASE_URL = <your-supabase-connection-string>
+   NEXTAUTH_URL = <your-azure-app-url>
+   NEXTAUTH_SECRET = <run: openssl rand -base64 32>
+   GEMINI_API_KEY = AIzaSyDFvQazTp1GSsRMl6AWI7rstoJH8oZRPsQ
+   ```
+   - Click **Save**
+
+4. **Deploy:**
+   ```bash
+   git add .
+   git commit -m "Deploy to Azure"
+   git push origin main
+   ```
+   - Wait 5-10 min for build
+   - Check: Static Web App → Environments → main
+
+5. **Test live app!** 🎉
+   - Visit your Azure URL
+   - Register, login, test features
+
+---
+
+## Alternative: Vercel Deployment
+
+## Option 1: Vercel (Free Tier)
 
 ### Prerequisites
 - GitHub account
