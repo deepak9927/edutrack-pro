@@ -19,7 +19,7 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:seed": "tsx prisma/seed.ts",
-        "postinstall": "prisma generate",,
+    "postinstall": "prisma generate",
     "analyze": "ANALYZE=true npm run build",
     "clean": "rm -rf .next dist node_modules/.cache",
     "prepare": "husky install",
