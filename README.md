@@ -1,123 +1,77 @@
-# IGNOU Student Portal
+# EduTrack Pro
 
-A full-stack student portal for IGNOU, featuring assignment management, wellness tracking, course enrollment, and more.
+This is a Next.js project with Prisma for database management.
 
-## Features
+## Setup
 
-- Assignment submission and grading
-- Course management
-- Student wellness tracking
-- Authentication and role-based access
-- Community features (forums, study groups)
+1.  **Clone the repository:**
+    ```bash
+    git clone [repository-url]
+    cd edutrack-pro
+    ```
+2.  **Install dependencies:**
+    This project uses `pnpm` as the package manager.
+    ```bash
+    pnpm install
+    ```
 
-## Getting Started
+## Database Setup (Prisma)
 
-### Prerequisites
+1.  **Configure Environment Variables:**
+    Create a `.env` file in the root directory and add your database connection string.
+    Example `.env`:
+    ```
+    DATABASE_URL="postgresql://user:password@host:port/database?schema=public"
+    NEXTAUTH_SECRET="YOUR_NEXTAUTH_SECRET"
+    NEXTAUTH_URL="http://localhost:3000"
+    ```
+    (Note: Replace with your actual database URL and generate a strong secret for NEXTAUTH_SECRET)
 
-- Node.js >= 18
-- PostgreSQL
-- [Prisma](https://www.prisma.io/)
+2.  **Push Prisma schema to your database:**
+    ```bash
+    pnpm run db:push
+    ```
+    This command will create the tables in your database based on `prisma/schema.prisma`.
 
-### Setup
+3.  **Generate Prisma client:**
+    ```bash
+    pnpm run db:generate
+    ```
+    This generates the Prisma client that your application uses to interact with the database.
 
-```bash
-git clone <repo-url>
-cd ignou
-npm install
-cp .env.example .env
-# Update DATABASE_URL in .env
-npx prisma migrate dev
-npm run dev
-```
+4.  **Seed the database (optional):**
+    If you have a seed file (`prisma/seed.ts`), you can run it to populate your database with initial data:
+    ```bash
+    pnpm run db:seed
+    ```
 
-## API Endpoints
+## Running the Application
 
-### Assignments
+1.  **Start the development server:**
+    ```bash
+    pnpm run dev
+    ```
+    The application will be accessible at `http://localhost:3000`.
 
-- `GET /api/assignments` — List assignments
-- `POST /api/assignments` — Submit assignment
+2.  **Open Prisma Studio (optional):**
+    To view and manage your database data, you can open Prisma Studio:
+    ```bash
+    pnpm run db:studio
+    ```
+    This will open a web interface in your browser.
 
-#### Example: Submit Assignment
+## Available Scripts
 
-```http
-POST /api/assignments
-Content-Type: application/json
-
-{
-  "assignmentId": "string",
-  "studentId": "string",
-  "content": "Assignment solution text"
-}
-```
-
-### Courses
-
-- `GET /api/courses` — List courses
-- `POST /api/courses` — Create course
-
-### Wellness
-
-- `GET /api/wellness` — Get wellness data
-- `POST /api/wellness` — Submit wellness data
-
-## Database Schema
-
-See [`schema.prisma`](./schema.prisma) for full schema.
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first.
-
-## License
-
-MIT
-```
-
-5. Start dev server:
-
-```bash
-pnpm dev
-```
-
-Open http://localhost:3000 in your browser.
-
-Quick checks
-
-```bash
-pnpm lint      # run eslint
-pnpm type-check # run tsc --noEmit
-pnpm test      # run vitest
-pnpm check     # lint + type-check + test (added helper script)
-```
-
-CI
-
-This repository includes a GitHub Actions workflow that runs on push and pull requests. It installs dependencies and runs build, lint, type-check and tests. See `.github/workflows/ci.yml`.
-
-## Project Structure
-
-The project follows a standard Next.js `app` directory structure. Here is a high-level overview:
-
-```
-/
-├── public/               # Static assets
-├── src/
-│   ├── app/              # Application routes and pages
-│   ├── components/       # Reusable UI components
-│   ├── lib/              # Helper functions, utilities, db client
-│   └── ...
-├── prisma/               # Prisma schema and migrations
-└── ...
-```
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-## Package Manager
-
-This project uses npm as the package manager. However, pnpm is recommended due to its efficient use of disk space. pnpm only downloads a package once, even if it is used by multiple projects, which can save a lot of disk space. Bun is another alternative, but it is still relatively new.
+-   `pnpm run dev`: Starts the development server.
+-   `pnpm run build`: Builds the application for production.
+-   `pnpm run start`: Starts the production server.
+-   `pnpm run lint`: Runs ESLint to check for code style issues.
+-   `pnpm run lint:fix`: Runs ESLint and attempts to fix issues.
+-   `pnpm run type-check`: Checks TypeScript types.
+-   `pnpm run test`: Runs tests using Vitest.
+-   `pnpm run db:push`: Pushes the Prisma schema to the database.
+-   `pnpm run db:studio`: Opens Prisma Studio.
+-   `pnpm run db:generate`: Generates the Prisma client.
+-   `pnpm run db:migrate`: Runs Prisma migrations.
+-   `pnpm run db:seed`: Seeds the database.
+-   `pnpm run create-admin`: Creates an admin user (check `src/lib/scripts/create-admin.ts` for details).

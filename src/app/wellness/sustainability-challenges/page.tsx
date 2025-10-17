@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Leaf, Award, Lightbulb } from "lucide-react";
+import { CheckCircle, Award, Lightbulb } from "lucide-react";
 
 interface Challenge {
   id: string;

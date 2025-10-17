@@ -262,7 +262,7 @@ export async function PUT(req: Request) {
       return new NextResponse(validatedData.error.message, { status: 400 });
     }
 
-    const { id, studentId, ...updateData } = validatedData.data;
+    const { id, ...updateData } = validatedData.data;
 
     // Optional: Ensure the authenticated user is the student whose data is being updated
     // if (session.user.id !== studentId) {

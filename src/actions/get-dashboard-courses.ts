@@ -1,4 +1,3 @@
-import { db } from "@/lib/db";
 
 interface CourseWithProgress {
   id: string;

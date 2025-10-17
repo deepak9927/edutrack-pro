@@ -140,7 +140,7 @@ export function Assignments() {
                       <p className="text-sm text-gray-600 dark:text-gray-400 break-words mb-3">{assignment.description}</p>
                       <div className="flex items-center gap-2 mb-3">
                         <DueIcon className="h-4 w-4 text-gray-500" />
-                        <Badge variant={dueInfo.color as any} className="text-xs">
+                        <Badge variant={dueInfo.color as "destructive" | "secondary" | "outline"} className="text-xs">
                           {dueInfo.text}
                         </Badge>
                       </div>

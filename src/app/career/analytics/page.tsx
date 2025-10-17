@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart, LineChart, PieChart, TrendingUp, Lightbulb } from "lucide-react";
+import { BarChart, LineChart, PieChart, Lightbulb } from "lucide-react";
 
 interface Resource {
   id: string;

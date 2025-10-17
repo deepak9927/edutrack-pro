@@ -108,7 +108,7 @@ export function StudentDashboard() {
     } else {
       console.log("User ID is not available.");
     }
-  }, [user?.id]);
+  }, [user?.id, logMetrics]);
 
 
   if (loading) {

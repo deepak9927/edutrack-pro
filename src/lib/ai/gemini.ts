@@ -7,10 +7,10 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 // Initialize Google Gemini AI (FREE tier: 15 requests/min, 1M tokens/month)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
+export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
 
 // Different models for different use cases
-const models = {
+export const models = {
   // Best for general text generation and reasoning
   pro: genAI.getGenerativeModel({ model: "gemini-1.5-pro" }),
   
@@ -30,11 +30,16 @@ export interface AIResponse {
 }
 
 export interface StudyPlanRequest {
+  selectedCourses: string[]; // IDs of selected courses
   subject: string;
+  topics: string[]; // Specific topics to cover
+  deadline: string; // Date string for deadline
+  estimatedStudyTimePerTopic: number; // hours per topic
   currentLevel: 'beginner' | 'intermediate' | 'advanced';
   timeAvailable: number; // hours per week
   goals: string[];
   weakAreas?: string[];
+  learningStyle?: 'visual' | 'auditory' | 'kinesthetic' | 'reading/writing';
 }
 
 export interface CareerGuidanceRequest {
@@ -90,11 +95,16 @@ export async function generateStudyPlan(request: StudyPlanRequest): Promise<AIRe
     const prompt = `
     Create a detailed study plan for a BCA student with the following requirements:
     
+    Selected Courses (IDs): ${request.selectedCourses.join(', ')}
     Subject: ${request.subject}
+    Topics: ${request.topics.join(', ')}
+    Deadline: ${request.deadline}
+    Estimated Study Time per Topic: ${request.estimatedStudyTimePerTopic} hours
     Current Level: ${request.currentLevel}
-    Time Available: ${request.timeAvailable} hours per week
+    Time Available (total): ${request.timeAvailable} hours per week
     Goals: ${request.goals.join(', ')}
     ${request.weakAreas ? `Weak Areas: ${request.weakAreas.join(', ')}` : ''}
+    ${request.learningStyle ? `Preferred Learning Style: ${request.learningStyle}` : ''}
     
     Please provide:
     1. Weekly schedule breakdown

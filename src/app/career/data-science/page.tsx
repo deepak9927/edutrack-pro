@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Database, Table, BarChart2, PlayCircle } from "lucide-react";
+import { Database, Table, BarChart2, PlayCircle } from "lucide-react";
 
 interface Resource {
   id: string;

@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CheckCircle, Plus, XCircle, Flame } from "lucide-react";
+import { CheckCircle, Plus, Flame, Trash2 } from "lucide-react";
 
 interface Habit {
   id: string;
@@ -71,7 +70,7 @@ export default function HabitTrackerPage() {
             return {
               ...habit,
               streak: habit.lastCompleted ? habit.streak + 1 : 1,
-              lastCompleted: today,
+              lastCompleted: today as string | null,
             };
           }
         }

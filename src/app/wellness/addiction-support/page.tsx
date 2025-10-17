@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Users, MessageSquare, CheckCircle, Award, Lightbulb } from "lucide-react";
 
 interface SupportGroup {
@@ -23,7 +22,7 @@ interface RecoveryMilestone {
 }
 
 export default function AddictionSupportPage() {
-  const [supportGroups, setSupportGroups] = useState<SupportGroup[]>([
+  const [supportGroups] = useState<SupportGroup[]>([
     {
       id: "group_1",
       name: "Digital Wellness Warriors",
@@ -80,20 +79,23 @@ export default function AddictionSupportPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Addiction Recovery & Wellness</h1>
+      <h1 className="text-3xl font-bold">Anonymous Support Network</h1>
       <p className="text-muted-foreground">
-        Find support, track your recovery, and build healthy habits.
+        Connect with peers, access crisis intervention, and find resources for addiction recovery and family support.
       </p>
 
-      {/* Anonymous Peer Support Groups */}
+      {/* Peer Support Groups */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Users className="mr-2 h-5 w-5" />
-            Anonymous Peer Support Groups
+            Peer Support Groups
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Encrypted, privacy-first community for mental health discussions.
+          </p>
           {supportGroups.map((group) => (
             <div key={group.id} className="p-4 border rounded-lg flex items-center justify-between">
               <div>
@@ -112,15 +114,37 @@ export default function AddictionSupportPage() {
         </CardContent>
       </Card>
 
-      {/* Recovery Milestones */}
+      {/* Crisis Intervention System */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Lightbulb className="mr-2 h-5 w-5" /> {/* Using Lightbulb as a placeholder for now */}
+            Crisis Intervention System
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            24/7 AI monitoring with professional counselor connections.
+          </p>
+          <Button variant="destructive">Connect to Counselor Now</Button>
+          <p className="text-xs text-muted-foreground mt-2">
+            In case of emergency, please call your local emergency services.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Addiction Recovery Program */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Award className="mr-2 h-5 w-5" />
-            My Recovery Milestones
+            Addiction Recovery Program
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Personalized recovery plans with milestone tracking.
+          </p>
           <div>
             <Label htmlFor="new-milestone">New Milestone</Label>
             <div className="flex space-x-2">
@@ -162,34 +186,19 @@ export default function AddictionSupportPage() {
         </CardContent>
       </Card>
 
-      {/* Healthy Alternatives & Focus Enhancement */}
+      {/* Family Support Resources */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Lightbulb className="mr-2 h-5 w-5" />
-            Healthy Alternatives & Focus
+            <Users className="mr-2 h-5 w-5" /> {/* Using Users as a placeholder for now */}
+            Family Support Resources
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-medium mb-2">Productive Activity Suggestions:</h3>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>Read a book or an article related to your studies.</li>
-              <li>Go for a short walk or do some light exercises.</li>
-              <li>Practice mindfulness meditation for 5-10 minutes.</li>
-              <li>Learn a new skill or language online.</li>
-              <li>Connect with a friend or family member.</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-medium mb-2">Focus Enhancement Techniques:</h3>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>Implement the Pomodoro Technique (25 mins focus, 5 mins break).</li>
-              <li>Use distraction blocker apps during study sessions.</li>
-              <li>Create a dedicated "deep work" environment.</li>
-              <li>Listen to instrumental music or white noise to improve concentration.</li>
-            </ul>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Educational materials and guidance for family members supporting loved ones in recovery.
+          </p>
+          <Button variant="outline">Explore Resources</Button>
         </CardContent>
       </Card>
     </div>

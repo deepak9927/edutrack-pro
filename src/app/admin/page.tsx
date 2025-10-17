@@ -11,8 +11,6 @@ import {
   BookOpen, 
   Users, 
   Calendar, 
-  BarChart3,
-  Plus,
   Edit,
   Trash2
 } from "lucide-react";

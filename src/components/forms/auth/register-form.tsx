@@ -32,6 +32,9 @@ export const RegisterForm = () => {
     setError("");
     setSuccess("");
 
+    console.log("Frontend sending values:", values); // Add log for values
+    console.log("Frontend sending JSON:", JSON.stringify(values)); // Add log for JSON string
+
     startTransition(() => {
       fetch("/api/auth/register", {
         method: "POST",

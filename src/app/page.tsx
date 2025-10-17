@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <main className="flex-1">
-        <section className="w-full py-12 sm:py-24 md:py-32 lg:py-48 xl:py-64 bg-gradient-to-r from-[#6366F1] to-[#9333EA] text-white">
+        <section className="w-full py-12 sm:py-24 md:py-32 lg:py-48 xl:py-64 bg-mesh-gradient text-foreground">
           <div className="container px-4 md:px-6 text-center">
             <div className="space-y-6">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
@@ -19,11 +19,11 @@ export default function HomePage() {
               <div className="flex flex-col gap-4 sm:flex-row justify-center">
                 <Link
                   href="/auth/register"
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-[#6366F1] shadow transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-primary shadow transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                 >
                   Get Started
                 </Link>
-                <Button asChild variant="outline" className="h-11 px-8 text-sm font-medium shadow-sm transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50">
+                <Button asChild variant="outline" className="h-11 px-8 text-sm font-medium shadow-sm transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
                   <Link href="/auth/login">
                     User Login
                   </Link>

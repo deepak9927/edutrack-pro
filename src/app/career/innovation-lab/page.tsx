@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2, Lightbulb, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Lightbulb } from "lucide-react";
 
 interface Project {
   id: string;
@@ -50,6 +50,7 @@ export default function InnovationLabPage() {
           ...newProject,
           id: `proj_${projects.length + 1}`,
           team: newProject.team.split(",").map((s) => s.trim()),
+          status: newProject.status as "planning" | "in-progress" | "completed",
         },
       ]);
       setNewProject({ title: "", description: "", team: "", status: "planning" });
@@ -61,7 +62,7 @@ export default function InnovationLabPage() {
       setProjects(
         projects.map((project) =>
           project.id === editingProject.id
-            ? { ...editingProject, team: editingProject.team.map((s) => s.trim()) }
+            ? { ...editingProject, team: editingProject.team.map((s) => s.trim()), status: editingProject.status as "planning" | "in-progress" | "completed" }
             : project
         )
       );

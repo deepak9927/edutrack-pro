@@ -80,6 +80,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/fonts/:path*',
+        destination: 'https://fonts.gstatic.com/:path*',
+      },
+      {
         source: '/api/azure/:path*',
         destination: 'https://edutrack.azurewebsites.net/api/:path*',
       },

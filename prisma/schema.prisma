@@ -145,6 +145,55 @@ model Student {
   forumPosts      ForumPost[]
   forumComments   ForumComment[]
   
+  // New relations for Digital Wellness
+  screenTimeEntries ScreenTimeEntry[]
+  userScreenTimeSummary UserScreenTimeSummary?
+  focusModeConfig FocusModeConfig?
+  focusSessions   FocusSession[]
+  digitalSabbathSchedule DigitalSabbathSchedule?
+  userSabbathHistories UserSabbathHistory[]
+  eyeCareSettings EyeCareSettings?
+  eyeCareLogs     EyeCareLog[]
+  productivityScore ProductivityScore?
+
+  // New relations for Anonymous Support Network
+  crisisAlerts    CrisisAlert[]
+  recoveryPlan    RecoveryPlan?
+  recoveryMilestones RecoveryMilestone[]
+
+  // New relations for Professional Network & Mentorship
+  mentorProfile   MentorProfile?
+  mentorshipSessions MentorshipSession[] @relation("StudentMentorshipSessions")
+  mentorshipGoals MentorshipGoal[]
+  mockInterviews  MockInterview[]
+  studyGroupsJoined StudyGroupMember[] @relation("StudentStudyGroups")
+  codeReviews     CodeReview[] @relation("SubmittedCodeReviews")
+  tutoringOffers  TutoringOffer[] @relation("TutorOffers")
+  projects        Project[] @relation("StudentProjects")
+  alumniProfile   AlumniProfile?
+
+  // New relations for Gamified Achievement & Certification System
+  credentials     Credential[]
+  skillPortfolio  SkillPortfolio?
+  skillGapAnalyses SkillGapAnalysis[]
+  achievementBadges AchievementBadge[]
+  leaderboardEntry LeaderboardEntry?
+  peerRecognitionsGiven PeerRecognition[] @relation("GivenPeerRecognitions")
+  peerRecognitionsReceived PeerRecognition[] @relation("ReceivedPeerRecognitions")
+
+  // New relations for Advanced AI & Automation Features
+  assistantInteractions AssistantInteraction[]
+  learningRecommendations LearningRecommendation[]
+  studyScheduleAdjustments StudyScheduleAdjustment[]
+  performancePredictions PerformancePrediction[]
+  academicForecasts AcademicForecast[]
+  habitSuccesses  HabitSuccess[]
+  careerReadiness CareerReadiness?
+
+  // New relations for Enhanced Security & Privacy Framework
+  userConsents    UserConsent[]
+  dataErasureRequests DataErasureRequest[]
+  
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   
@@ -247,11 +296,43 @@ model Course {
   // Status
   isActive        Boolean         @default(true)
   academicYear    String
+  deletedAt       DateTime?       // For soft deletes
   
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   studyGroups StudyGroup[]
+  modules     Module[] // New relation for structured course content
   @@map("courses")
+}
+
+model Module {
+  id          String    @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  order       Int       // Order of modules within a course
+  course      Course    @relation(fields: [courseId], references: [id])
+  lessons     Lesson[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("modules")
+}
+
+model Lesson {
+  id          String    @id @default(cuid())
+  moduleId    String
+  title       String
+  content     String?   // Rich text content or markdown
+  videoUrl    String?
+  readingTime Int?      // Estimated reading time in minutes
+  order       Int       // Order of lessons within a module
+  module      Module    @relation(fields: [moduleId], references: [id])
+  resources   Resource[] // Link existing resources to lessons
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("lessons")
 }
 
 model Enrollment {
@@ -605,6 +686,141 @@ model WellnessData {
   
   @@unique([studentId, date])
   @@map("wellness_data")
+}
+
+// Screen sessions for detailed analytics (supports anonymized entries)
+model ScreenSession {
+  id         String   @id @default(cuid())
+  userId     String?  // nullable to support anonymized mode
+  sessionId  String?  // client-provided session identifier to dedupe
+  url        String?
+  title      String?
+  category   String?  // optional: study, social, entertainment, productivity
+  startedAt  DateTime
+  endedAt    DateTime
+  duration   Int      // seconds
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([startedAt])
+  @@unique([sessionId]) // Add uniqueness constraint for idempotency
+  @@map("screen_sessions")
+}
+
+// Digital Wellness Management
+model ScreenTimeEntry {
+  id                String    @id @default(cuid())
+  userId            String
+  timestamp         DateTime
+  appName           String
+  appCategory       String?
+  durationMinutes   Int
+  isProductive      Boolean?
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("screen_time_entries")
+}
+
+model UserScreenTimeSummary {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  date                  DateTime  @db.Date
+  totalScreenTimeMinutes Int
+  topApps               Json?
+  productivityScore     Int?
+
+  @@map("user_screen_time_summaries")
+}
+
+model FocusModeConfig {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  blockedApps             String[]
+  blockedWebsites         String[]
+  sessionDurationMinutes  Int
+  breakDurationMinutes    Int
+
+  @@map("focus_mode_configs")
+}
+
+model FocusSession {
+  id                String    @id @default(cuid())
+  userId            String
+  startTime         DateTime
+  endTime           DateTime
+  durationMinutes   Int
+  focusScore        Int?
+
+  @@index([userId])
+  @@index([startTime])
+  @@map("focus_sessions")
+}
+
+model DigitalSabbathSchedule {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  dayOfWeek   String[]  // e.g., ["SATURDAY", "SUNDAY"]
+  startTime   String    // e.g., "18:00"
+  endTime     String    // e.g., "18:00"
+  isActive    Boolean   @default(true)
+
+  @@map("digital_sabbath_schedules")
+}
+
+model SabbathActivity {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  category    String?
+
+  @@map("sabbath_activities")
+}
+
+model UserSabbathHistory {
+  id                  String    @id @default(cuid())
+  userId              String
+  sabbathDate         DateTime  @db.Date
+  durationMinutes     Int
+  completedActivities String[]  // IDs of SabbathActivity
+
+  @@index([userId])
+  @@index([sabbathDate])
+  @@map("user_sabbath_histories")
+}
+
+model EyeCareSettings {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  blueLightThreshold      Int?
+  exerciseIntervalMinutes Int?
+  postureAlertEnabled     Boolean   @default(false)
+
+  @@map("eye_care_settings")
+}
+
+model EyeCareLog {
+  id              String    @id @default(cuid())
+  userId          String
+  timestamp       DateTime
+  blueLightLevel  Int?
+  postureStatus   String?   // e.g., "GOOD", "SLOUCHING"
+  alertTriggered  Boolean   @default(false)
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("eye_care_logs")
+}
+
+model ProductivityScore {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  date            DateTime  @db.Date
+  score           Int
+  habitAnalysis   Json?
+  suggestions     Json?
+
+  @@map("productivity_scores")
 }
 
 model MeditationSession {
@@ -1060,6 +1276,400 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// Anonymous Support Network
+model SupportGroup {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  members     String[]  // Array of userId
+  createdAt   DateTime  @default(now())
+
+  @@map("support_groups")
+}
+
+// Enhanced Security & Privacy Framework
+model SecurityAuditLog {
+  id          String    @id @default(cuid())
+  timestamp   DateTime  @default(now())
+  eventType   String
+  details     Json?
+  outcome     String?
+
+  @@map("security_audit_logs")
+}
+
+model UserConsent {
+  id          String    @id @default(cuid())
+  userId      String
+  dataType    String    // e.g., "SCREEN_TIME", "WELLNESS_DATA"
+  consentGiven Boolean
+  timestamp   DateTime  @default(now())
+
+  @@index([userId])
+  @@map("user_consents")
+}
+
+model DataErasureRequest {
+  id            String    @id @default(cuid())
+  userId        String
+  requestDate   DateTime  @default(now())
+  status        String    // e.g., "PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"
+  completionDate DateTime?
+
+  @@index([userId])
+  @@map("data_erasure_requests")
+}
+
+// Advanced AI & Automation Features
+model AssistantInteraction {
+  id          String    @id @default(cuid())
+  userId      String
+  query       String
+  response    String
+  context     Json?
+  timestamp   DateTime  @default(now())
+
+  @@index([userId])
+  @@map("assistant_interactions")
+}
+
+model LearningRecommendation {
+  id          String    @id @default(cuid())
+  userId      String
+  contentId   String    // Reference to a course, resource, etc.
+  reason      String?
+  timestamp   DateTime  @default(now())
+
+  @@index([userId])
+  @@map("learning_recommendations")
+}
+
+model StudyScheduleAdjustment {
+  id              String    @id @default(cuid())
+  userId          String
+  originalSchedule Json?
+  adjustedSchedule Json?
+  reason          String?
+  timestamp       DateTime  @default(now())
+
+  @@index([userId])
+  @@map("study_schedule_adjustments")
+}
+
+model PerformancePrediction {
+  id            String    @id @default(cuid())
+  userId        String
+  predictionDate DateTime @default(now())
+  academicRisk  String?   // e.g., "LOW", "MEDIUM", "HIGH"
+  wellnessRisk  String?
+  suggestions   Json?
+
+  @@index([userId])
+  @@map("performance_predictions")
+}
+
+model AcademicForecast {
+  id            String    @id @default(cuid())
+  userId        String
+  courseId      String
+  predictedGrade Int
+  confidence    Float
+  factors       Json?
+
+  @@index([userId])
+  @@index([courseId])
+  @@map("academic_forecasts")
+}
+
+model HabitSuccess {
+  id                String    @id @default(cuid())
+  userId            String
+  habitId           String
+  successProbability Float
+  influencingFactors Json?
+
+  @@index([userId])
+  @@index([habitId])
+  @@map("habit_successes")
+}
+
+model CareerReadiness {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  score         Int
+  skillGaps     String[]
+  industryMatch String?
+
+  @@map("career_readiness_scores")
+}
+
+model MarketDemand {
+  id          String    @id @default(cuid())
+  skill       String    @unique
+  demandLevel String    // e.g., "LOW", "MEDIUM", "HIGH"
+  trend       String?   // e.g., "UP", "DOWN", "STABLE"
+
+  @@map("market_demands")
+}
+
+// Gamified Achievement & Certification System
+model Credential {
+  id                String    @id @default(cuid())
+  userId            String
+  title             String
+  issuer            String
+  issuedDate        DateTime
+  verificationHash  String?   // For blockchain verification
+  platform          String?   // e.g., "Coursera", "Udemy"
+
+  @@index([userId])
+  @@map("credentials")
+}
+
+model SkillPortfolio {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  generatedDate DateTime  @default(now())
+  content       String?   // AI-curated text
+  projects      Json?     // References to user projects
+
+  @@map("skill_portfolios")
+}
+
+model SkillGapAnalysis {
+  id              String    @id @default(cuid())
+  userId          String
+  analysisDate    DateTime  @default(now())
+  identifiedGaps  String[]
+  recommendations String[]
+
+  @@index([userId])
+  @@map("skill_gap_analyses")
+}
+
+model AchievementBadge {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  earnedDate  DateTime  @default(now())
+
+  @@index([userId])
+  @@map("achievement_badges")
+}
+
+model LeaderboardEntry {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  score       Int
+  rank        Int
+  category    String    // e.g., "WEEKLY_PRODUCTIVITY", "ALL_TIME_XP"
+
+  @@map("leaderboard_entries")
+}
+
+model PeerRecognition {
+  id            String    @id @default(cuid())
+  recognizerId  String
+  recognizedId  String
+  reason        String?
+  timestamp     DateTime  @default(now())
+
+  @@index([recognizerId])
+  @@index([recognizedId])
+  @@map("peer_recognitions")
+}
+
+// Professional Network & Mentorship
+model MentorProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  expertise     String[]
+  company       String?
+  bio           String?
+  rating        Float?
+  availability  Json?     // e.g., { "MONDAY": ["09:00-10:00"] }
+
+  @@map("mentor_profiles")
+}
+
+model MentorshipSession {
+  id            String    @id @default(cuid())
+  mentorId      String
+  studentId     String
+  topic         String
+  dateTime      DateTime
+  status        String    // e.g., "SCHEDULED", "COMPLETED", "CANCELLED"
+  recordingUrl  String?
+  notes         String?
+
+  @@index([mentorId])
+  @@index([studentId])
+  @@map("mentorship_sessions")
+}
+
+model MentorshipGoal {
+  id          String    @id @default(cuid())
+  sessionId   String
+  description String
+  targetDate  DateTime  @db.Date
+  isAchieved  Boolean   @default(false)
+
+  @@index([sessionId])
+  @@map("mentorship_goals")
+}
+
+model MockInterview {
+  id            String    @id @default(cuid())
+  userId        String
+  interviewType String
+  date          DateTime  @db.Date
+  feedback      String?
+  score         Int?
+
+  @@index([userId])
+  @@map("mock_interviews")
+}
+
+model CareerPath {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  steps           Json?     // e.g., [{ title: "Learn Python", duration: "3 months" }]
+  industryInsights Json?
+
+  @@map("career_paths")
+}
+
+model StudyGroup {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  courseId      String?
+  isPublic      Boolean   @default(true)
+  maxMembers    Int       @default(10)
+  currentMembers Int      @default(0)
+  tags          String[]
+  category      String?
+
+  @@map("study_groups")
+}
+
+model CodeReview {
+  id            String    @id @default(cuid())
+  projectId     String
+  submitterId   String
+  reviewerId    String?
+  codeSnippet   String
+  feedback      String?
+  rating        Int?      // 1-5 stars
+
+  @@index([projectId])
+  @@index([submitterId])
+  @@map("code_reviews")
+}
+
+model TutoringOffer {
+  id            String    @id @default(cuid())
+  tutorId       String
+  skill         String
+  rate          Float     // per hour
+  availability  Json?
+
+  @@index([tutorId])
+  @@map("tutoring_offers")
+}
+
+model Project {
+  id                String    @id @default(cuid())
+  name              String
+  description       String?
+  teamMembers       String[]  // Array of userId
+  versionControlLink String?
+
+  @@map("projects")
+}
+
+model Competition {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  prizes      Json?
+
+  @@map("competitions")
+}
+
+model AlumniProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  graduationYear  Int
+  currentCompany  String?
+  industry        String?
+
+  @@map("alumni_profiles")
+}
+
+model GroupMessage {
+  id          String    @id @default(cuid())
+  groupId     String
+  senderId    String
+  content     String
+  timestamp   DateTime  @default(now())
+  isEncrypted Boolean   @default(true)
+
+  @@index([groupId])
+  @@index([senderId])
+  @@map("group_messages")
+}
+
+model CrisisAlert {
+  id            String    @id @default(cuid())
+  userId        String
+  timestamp     DateTime  @default(now())
+  triggerReason String
+  severity      String    // e.g., "LOW", "MEDIUM", "HIGH"
+  status        String    // e.g., "PENDING", "REVIEWED", "RESOLVED"
+  counselorId   String?   // Optional: ID of the counselor assigned
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("crisis_alerts")
+}
+
+model RecoveryPlan {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  goals       Json?     // e.g., [{ description: "Reduce social media", target: "2 hours" }]
+  strategies  Json?
+  startDate   DateTime  @db.Date
+  endDate     DateTime? @db.Date
+
+  @@map("recovery_plans")
+}
+
+model RecoveryMilestone {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  targetDate  DateTime  @db.Date
+  isAchieved  Boolean   @default(false)
+  achievedDate DateTime? @db.Date
+
+  @@index([userId])
+  @@map("recovery_milestones")
+}
+
+model FamilyResource {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  url         String
+  category    String?
+
+  @@map("family_resources")
 }
 
 enum SkillCategory {

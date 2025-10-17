@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -16,7 +15,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { DigitalDetoxInput, digitalDetoxSchema } from "@/lib/validations/wellness";
+import { digitalDetoxSchema } from "@/lib/validations/wellness";
 import { toast } from "react-hot-toast";
 
 export default function DigitalDetoxPage() {

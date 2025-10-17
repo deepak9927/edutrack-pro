@@ -23,16 +23,15 @@ export default async function RootLayout({
   const role = session?.user.role || "GUEST";
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className={`${inter.className} h-screen overflow-hidden`}>
+      <body className={`h-screen ${inter.className}`}>
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          tabIndex={0}
         >
           Skip to main content
         </a>

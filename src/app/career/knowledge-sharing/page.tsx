@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2, Share2, BookOpen, Users } from "lucide-react";
+import { Plus, Edit, Trash2, BookOpen } from "lucide-react";
 
 interface KnowledgeItem {
   id: string;
