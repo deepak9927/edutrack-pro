@@ -72,5 +72,43 @@ jobs:
             exit 1
           fi
 
+      - name: Sign in with credentials (NextAuth)
+        env:
+          TARGET: ${{ steps.target.outputs.TARGET }}
+        run: |
+          # Use the same test user created earlier
+          TIMESTAMP=$(date +%s)
+          EMAIL="smoketest+${TIMESTAMP}@example.com"
+          PASSWORD="Sm0keT3st!"
+
+          # Note: The registration step used a timestamped email; reuse the same timestamp if available.
+          # For simplicity in the workflow, perform sign-up again and then sign-in.
+          PAYLOAD=$(jq -n --arg n "Smoke Test" --arg e "$EMAIL" --arg p "$PASSWORD" '{name: $n, email: $e, password: $p}')
+          curl -s -X POST "$TARGET/api/auth/register" -H "Content-Type: application/json" -d "$PAYLOAD" -o /tmp/register.json || true
+
+          # Now sign in using NextAuth credentials callback
+          SIGNIN_PAYLOAD=$(jq -n --arg e "$EMAIL" --arg p "$PASSWORD" '{csrfToken: null, callbackUrl: "/dashboard", json: true, username: $e, email: $e, password: $p}')
+
+          # Perform sign-in and save cookies
+          COOKIE_JAR=/tmp/cookies.txt
+          rm -f $COOKIE_JAR || true
+          HTTP_CODE=$(curl -s -w "%{http_code}" -c $COOKIE_JAR -X POST "$TARGET/api/auth/callback/credentials" -H "Content-Type: application/x-www-form-urlencoded" --data-urlencode "email=$EMAIL" --data-urlencode "password=$PASSWORD" -o /tmp/signin.html)
+          echo "Sign-in HTTP code: $HTTP_CODE"
+          if [[ "$HTTP_CODE" != "302" && "$HTTP_CODE" != "200" ]]; then
+            echo "Sign-in did not redirect or return success (code $HTTP_CODE)" >&2
+            cat /tmp/signin.html || true
+            exit 1
+          fi
+
+          # Validate session using the cookies
+          SESSION_JSON=$(curl -s -b $COOKIE_JAR "$TARGET/api/auth/session")
+          echo "Session response: $SESSION_JSON"
+          if echo "$SESSION_JSON" | grep -q "user"; then
+            echo "Session contains user — sign-in verified"
+          else
+            echo "Session did not contain user info" >&2
+            exit 1
+          fi
+
       - name: Success message
         run: echo "Smoke test passed against ${{ steps.target.outputs.TARGET }}"
