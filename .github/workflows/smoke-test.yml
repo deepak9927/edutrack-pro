@@ -1,5 +1,6 @@
 name: Smoke test (registration + login)
 
+# Allow this workflow to be called directly (workflow_dispatch) or re-used by other workflows (workflow_call)
 on:
   push:
     branches: [ main ]
@@ -8,6 +9,12 @@ on:
       target_url:
         description: 'Full URL of deployed site (e.g. https://your-app.example). If empty, uses DEPLOY_URL secret.'
         required: false
+  workflow_call:
+    inputs:
+      target_url:
+        description: 'Full URL of deployed site (e.g. https://your-app.example). If empty, uses DEPLOY_URL secret.'
+        required: false
+        type: string
 
 jobs:
   smoke-test:
