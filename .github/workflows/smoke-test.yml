@@ -1,0 +1,76 @@
+name: Smoke test (registration + login)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Full URL of deployed site (e.g. https://your-app.example). If empty, uses DEPLOY_URL secret.'
+        required: false
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine target URL
+        id: target
+        run: |
+          if [ -n "${{ github.event.inputs.target_url }}" ]; then
+            echo "TARGET=${{ github.event.inputs.target_url }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ secrets.DEPLOY_URL }}" ]; then
+            echo "TARGET=${{ secrets.DEPLOY_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "No target_url input provided and DEPLOY_URL secret is not set. Failing." >&2
+            exit 1
+          fi
+
+      - name: Wait for site to be reachable
+        run: |
+          TARGET=${{ steps.target.outputs.TARGET }}
+          echo "Waiting for $TARGET to respond..."
+          tries=0
+          until curl -sf "$TARGET" >/dev/null; do
+            tries=$((tries+1))
+            if [ $tries -ge 30 ]; then
+              echo "Timed out waiting for $TARGET" >&2
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "$TARGET is reachable"
+
+      - name: Run registration smoke test
+        env:
+          TARGET: ${{ steps.target.outputs.TARGET }}
+        run: |
+          TIMESTAMP=$(date +%s)
+          EMAIL="smoketest+${TIMESTAMP}@example.com"
+          PAYLOAD=$(jq -n --arg n "Smoke Test" --arg e "$EMAIL" --arg p "Sm0keT3st!" '{name: $n, email: $e, password: $p}')
+          echo "Registering user: $EMAIL"
+          HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST "$TARGET/api/auth/register" -H "Content-Type: application/json" -d "$PAYLOAD")
+          echo "Response HTTP code: $HTTP_CODE"
+          cat /tmp/resp.json || true
+          if [[ "$HTTP_CODE" == "201" ]] || [[ "$HTTP_CODE" == "200" ]] || [[ "$HTTP_CODE" == "409" ]]; then
+            echo "Registration endpoint returned acceptable HTTP code: $HTTP_CODE"
+          else
+            echo "Unexpected HTTP code from register: $HTTP_CODE" >&2
+            exit 1
+          fi
+
+      - name: Check login page
+        env:
+          TARGET: ${{ steps.target.outputs.TARGET }}
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET/auth/login")
+          echo "Login page HTTP code: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Login page did not return 200" >&2
+            exit 1
+          fi
+
+      - name: Success message
+        run: echo "Smoke test passed against ${{ steps.target.outputs.TARGET }}"
