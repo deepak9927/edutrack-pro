@@ -1,6 +1,13 @@
+/// <reference lib="dom" />
 "use client";
 
 import { useEffect, useRef } from 'react';
+
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void;
+  }
+}
 
 interface PerformanceMetrics {
   fcp?: number; // First Contentful Paint
@@ -30,11 +37,11 @@ export function usePerformance() {
             metricsRef.current.lcp = entry.startTime;
             break;
           case 'first-input':
-            metricsRef.current.fid = (entry as any).processingStart - entry.startTime;
+            metricsRef.current.fid = (entry as PerformanceEventTiming).processingStart - entry.startTime;
             break;
           case 'layout-shift':
-            if (!(entry as any).hadRecentInput) {
-              metricsRef.current.cls = (metricsRef.current.cls || 0) + (entry as any).value;
+            if (!(entry as LayoutShiftEntry).hadRecentInput) {
+              metricsRef.current.cls = (metricsRef.current.cls || 0) + (entry as LayoutShiftEntry).value;
             }
             break;
         }
@@ -63,10 +70,10 @@ export function usePerformance() {
     console.log('Performance Metrics:', metrics);
 
     // Could send to analytics service here
-    if (typeof window !== 'undefined' && (window as any).gtag) {
+    if (typeof window !== 'undefined' && window.gtag) {
       Object.entries(metrics).forEach(([key, value]) => {
         if (value !== undefined) {
-          (window as any).gtag('event', `web_vitals_${key}`, {
+          window.gtag('event', `web_vitals_${key}`, {
             value: Math.round(value),
             custom_map: { metric_value: value }
           });

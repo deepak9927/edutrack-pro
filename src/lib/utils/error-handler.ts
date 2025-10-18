@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 
 interface ErrorResponse {
   message: string;
-  errors?: any;
+  errors?: ReturnType<ZodError['flatten']>['fieldErrors'];
 }
 
 export function handleError(error: unknown): NextResponse<ErrorResponse> {

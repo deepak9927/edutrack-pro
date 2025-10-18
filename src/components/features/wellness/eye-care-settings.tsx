@@ -27,8 +27,8 @@ export function EyeCareSettingsComponent() {
         }
         const data: EyeCareSettings = await response.json();
         setSettings(data);
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'An unknown error occurred');
       } finally {
         setLoading(false);
       }
@@ -52,8 +52,8 @@ export function EyeCareSettingsComponent() {
       }
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000); // Hide success message after 3 seconds
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
       setSaving(false);
     }

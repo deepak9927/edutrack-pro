@@ -11,7 +11,7 @@ export async function saveScreenSession(payload: {
   endedAt: Date;
   duration: number;
 }): Promise<ScreenSession> {
-  const data = {
+  const data: Omit<ScreenSession, 'id' | 'createdAt' | 'updatedAt' | 'sessionId'> & { sessionId?: string | null } = {
     userId: payload.userId,
     url: payload.url,
     title: payload.title,
@@ -19,7 +19,7 @@ export async function saveScreenSession(payload: {
     startedAt: payload.startedAt,
     endedAt: payload.endedAt,
     duration: Math.max(0, Math.floor(payload.duration)),
-  } as any;
+  };
 
   if (payload.sessionId) {
     // try to find an existing session; if found, update, else create
@@ -70,7 +70,7 @@ export async function runRetention(days = 90, anonymizedOnly = true) {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
 
-  const where: any = { createdAt: { lt: cutoff } };
+  const where: { createdAt: { lt: Date }; userId?: string | null } = { createdAt: { lt: cutoff } };
   if (anonymizedOnly) where.userId = null;
 
   const result = await prisma.screenSession.deleteMany({ where });

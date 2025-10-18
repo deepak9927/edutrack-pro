@@ -218,7 +218,7 @@ export function StudyPlannerForm() {
                         { value: "intermediate", label: "Intermediate" },
                         { value: "advanced", label: "Advanced" },
                       ]}
-                      onChange={(selectedOption: any) => field.onChange(selectedOption?.value)}
+                      onChange={(selectedOption: { value: string; label: string } | null) => field.onChange(selectedOption?.value)}
                       value={field.value ? { value: field.value, label: field.value.charAt(0).toUpperCase() + field.value.slice(1) } : null}
                     />
                   </FormControl>

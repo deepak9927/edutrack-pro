@@ -1,7 +1,7 @@
 import * as bcrypt from "bcryptjs";
 import * as z from "zod";
 
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { RegisterSchema } from "@/lib/validations/auth";
 
 export async function createUser(values: z.infer<typeof RegisterSchema>) {
@@ -14,7 +14,7 @@ export async function createUser(values: z.infer<typeof RegisterSchema>) {
   const { email, password, name } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const existingUser = await db.user.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: {
       email,
     },
@@ -24,7 +24,7 @@ export async function createUser(values: z.infer<typeof RegisterSchema>) {
     return { error: "Email already in use!" };
   }
 
-  await db.user.create({
+  await prisma.user.create({
     data: {
       name,
       email,

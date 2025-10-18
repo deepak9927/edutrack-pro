@@ -20,10 +20,11 @@ import { FormSuccess } from "@/components/auth/form-success";
 
 import { useTransition, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -31,7 +32,7 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: "",
+      email: searchParams?.get("email") ?? "",
       password: "",
     },
   });
@@ -52,15 +53,7 @@ export function LoginForm() {
           setError(callback.error);
          } else if (callback?.ok) {
            setSuccess("Logged in successfully!");
-           // Role-based redirection
-           const userRole = callback?.user?.role; // Assuming the role is available in the callback
-           if (userRole === "admin") {
-             router.push("/admin/dashboard"); // Redirect to admin dashboard
-           } else if (userRole === "teacher") {
-             router.push("/teacher/dashboard"); // Redirect to teacher dashboard
-           } else {
-             router.push("/dashboard"); // Redirect to student dashboard or default
-           }
+           router.push("/dashboard"); // Redirect to dashboard, middleware will handle role-based redirection
          }
       });
     });

@@ -8,10 +8,11 @@ import { adminRoutes, studentRoutes, teacherRoutes } from "./sidebar-routes";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button/button";
 import { Settings } from "lucide-react";
+import { Session } from "next-auth";
 
 interface SidebarContentProps {
   role: string;
-  session: any;
+  session: Session | null;
 }
 
 export function SidebarContent({ role, session }: SidebarContentProps) {

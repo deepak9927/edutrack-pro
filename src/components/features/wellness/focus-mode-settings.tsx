@@ -35,8 +35,8 @@ export function FocusModeSettingsComponent() {
         }
         const data: FocusModeSettings = await response.json();
         setSettings(data);
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'An unknown error occurred');
       } finally {
         setLoading(false);
       }
@@ -60,8 +60,8 @@ export function FocusModeSettingsComponent() {
       }
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000); // Hide success message after 3 seconds
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
       setSaving(false);
     }
@@ -89,7 +89,7 @@ export function FocusModeSettingsComponent() {
   const addScheduleEntry = () => {
     setSettings((prev) => ({
       ...prev,
-      schedule: [...prev.schedule, { day: '', startTime: '', endTime: '' } as { day: string; startTime: string; endTime: string }],
+      schedule: [...prev.schedule, { day: '', startTime: '', endTime: '' }],
     }));
   };
 

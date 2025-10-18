@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useState, useTransition } from "react";
 import { useForm, ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import { RegisterSchema } from "@/lib/validations/auth";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -27,6 +27,8 @@ export const RegisterForm = () => {
     },
   });
 
+  const router = useRouter();
+
 
   const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
     setError("");
@@ -48,10 +50,23 @@ export const RegisterForm = () => {
           console.log("Backend response:", data); // Add console log for debugging
           if (data.error) {
             setError(data.error);
-          } else if (data.success) {
+            return;
+          }
+
+          // Support multiple success shapes: { success: 'msg' } or { ok: true, user }
+          if (data.ok || data.user) {
+            setSuccess("Registration successful. Redirecting to login...");
+            // Redirect to login and prefill email for better UX
+            const encodedEmail = encodeURIComponent(values.email);
+            router.push(`/auth/login?email=${encodedEmail}`);
+            return;
+          }
+
+          if (data.success) {
             setSuccess(data.success);
-            // Redirect to login page after successful registration
-            window.location.href = "/auth/login";
+            const encodedEmail = encodeURIComponent(values.email);
+            router.push(`/auth/login?email=${encodedEmail}`);
+            return;
           }
         })
         .catch((error) => {
@@ -108,7 +123,17 @@ export const RegisterForm = () => {
         <FormError message={error} />
         <FormSuccess message={success} />
         <Button disabled={isPending} type="submit" className="w-full">
-          Register
+          {isPending ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              Registering...
+            </span>
+          ) : (
+            "Register"
+          )}
         </Button>
       </form>
     </Form>
