@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 
 import { LoginSchema } from "@/lib/validations/auth"
-import { db } from "@/lib/db"
+
 import { getUserByEmail } from "@/lib/actions/get-user"
 
 import Google from "next-auth/providers/google"

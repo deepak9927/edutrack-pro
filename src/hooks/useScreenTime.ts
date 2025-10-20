@@ -22,19 +22,6 @@ export function useScreenTime({ enabled }: { enabled: boolean }) {
   const lastActivity = useRef<number>(Date.now());
   const buffer = useRef<PendingSession[]>([]);
 
-  function startSession() {
-    if (!enabled) return;
-    if (currentSession.current) return;
-    const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    currentSession.current = {
-      sessionId,
-      url: window.location.href,
-      title: document.title || undefined,
-      startedAt: new Date().toISOString(),
-    };
-    setIsActive(true);
-  }
-
   function endSession() {
     if (!currentSession.current) return;
     const s = currentSession.current;
@@ -47,6 +34,20 @@ export function useScreenTime({ enabled }: { enabled: boolean }) {
 
   useEffect(() => {
     if (!enabled) return;
+
+    function startSession() {
+      if (!enabled) return;
+      if (currentSession.current) return;
+      const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      currentSession.current = {
+        sessionId,
+        url: window.location.href,
+        title: document.title || undefined,
+        startedAt: new Date().toISOString(),
+      };
+      setIsActive(true);
+    }
+
     // Simple BroadcastChannel leader election: only the leader tab will
     // perform periodic network syncs. This avoids duplicate writes from
     // multiple tabs. Leadership is ephemeral and best-effort.
@@ -72,7 +73,7 @@ export function useScreenTime({ enabled }: { enabled: boolean }) {
       }, 200);
       // clear on cleanup
       setTimeout(() => clearTimeout(t), 0);
-    } catch (e) {
+    } catch {
       // BroadcastChannel not supported — fall back to allowing this tab
       isLeader = true;
     }
@@ -103,7 +104,7 @@ export function useScreenTime({ enabled }: { enabled: boolean }) {
           const blob = new Blob([payload], { type: "application/json" });
           navigator.sendBeacon("/api/wellness/screentime", blob);
           buffer.current = [];
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -121,7 +122,7 @@ export function useScreenTime({ enabled }: { enabled: boolean }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(toSend.map((b) => ({ ...b, anonymized: true }))),
-        }).catch((e) => {
+        }).catch(() => {
           // requeue
           buffer.current.unshift(...toSend);
         });
@@ -138,12 +139,12 @@ export function useScreenTime({ enabled }: { enabled: boolean }) {
       if (bc) {
         try {
           bc.close();
-        } catch (e) {}
+        } catch {}
       }
       clearInterval(interval);
       endSession();
     };
-  }, [enabled, startSession]);
+  }, [enabled]);
 
   return { isActive, bufferRef: buffer };
 }

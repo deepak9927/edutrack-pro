@@ -614,7 +614,7 @@ export const aiCache = new AICache();
 /**
  * Wrapper function with rate limiting and caching
  */
-export async function aiRequest<T>(
+export async function aiRequest(
   aiFunction: () => Promise<AIResponse>,
   cacheKey?: string,
   useCache: boolean = true
