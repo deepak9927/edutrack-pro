@@ -9,12 +9,18 @@ const createModuleSchema = z.object({
   order: z.number().int().min(0, "Order must be a non-negative integer"),
 });
 
+interface Context {
+  params: {
+    courseId: string;
+  };
+}
+
 export async function GET(
   request: Request,
-  { params }: { params: { courseId: string } }
+  context: Context
 ) {
   try {
-    const { courseId } = params;
+    const { courseId } = context.params;
 
     const modules = await prisma.module.findMany({
       where: { courseId },

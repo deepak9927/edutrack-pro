@@ -1,12 +1,12 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar/index";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuHeader } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { auth, signOut } from "@/lib/auth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/constants";
 import { adminRoutes, studentRoutes, teacherRoutes } from "./sidebar-routes";
 import { usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button/button";
+import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { Session } from "next-auth";
 
@@ -65,7 +65,7 @@ export function SidebarContent({ role, session }: SidebarContentProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80" align="end" forceMount>
-            <DropdownMenuHeader className="font-normal">
+            <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-2 p-4 bg-white dark:bg-gray-900 rounded-t-lg">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-12 w-12 ring-2 ring-blue-200 dark:ring-blue-800">
@@ -95,7 +95,7 @@ export function SidebarContent({ role, session }: SidebarContentProps) {
                   </p>
                 </div>
               </div>
-            </DropdownMenuHeader>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => router.push("/profile")}

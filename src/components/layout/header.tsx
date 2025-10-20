@@ -7,8 +7,8 @@ import { Session } from "next-auth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, BookOpen } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar/index";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuHeader } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { signOut } from "next-auth/react";
 import { SidebarContent } from "./sidebar/sidebar-content";
 import { ThemeToggle } from "./theme-toggle";
@@ -82,14 +82,14 @@ export function Header({ session, role }: HeaderProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuHeader className="font-normal">
+                <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1.5 p-2">
                     <p className="text-sm font-medium leading-none">
                       {session.user.name || session.user.email || "User"}
                     </p>
                     <p className="text-xs text-muted-foreground">{role}</p>
                   </div>
-                </DropdownMenuHeader>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/profile">Profile</Link>

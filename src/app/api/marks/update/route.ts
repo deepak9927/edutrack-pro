@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // Validate the request body against the schema
-    const _validatedBody = updateMarksSchema.parse(body);
+    updateMarksSchema.parse(body);
 
     // Implement the logic to update the marks in the database here
     // For example:

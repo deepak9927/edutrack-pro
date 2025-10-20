@@ -5,7 +5,12 @@ import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
+    gtag: (...args: unknown[]) => void;
+  }
+
+  interface LayoutShiftEntry extends PerformanceEntry {
+    hadRecentInput: boolean;
+    value: number;
   }
 }
 

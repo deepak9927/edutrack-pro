@@ -17,7 +17,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form/form"; // Explicitly importing from form.tsx
+} from "@/components/ui/form";
 
 interface ServiceProject {
   id: string;
