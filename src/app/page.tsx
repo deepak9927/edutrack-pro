@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { StudyPlannerForm } from "@/components/features/ai-tutor/study-planner-form";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -99,7 +100,7 @@ export default function HomePage() {
                   </li>
                 </ul>
               </div>
-              <img
+              <Image
                 src="/placeholder.svg"
                 width="550"
                 height="310"

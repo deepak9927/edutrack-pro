@@ -15,7 +15,7 @@ interface Message {
 export function PeerSupportGroups() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [username, setUsername] = useState('Anonymous');
+  const username = 'Anonymous';
 
   const sendMessage = () => {
     if (newMessage.trim()) {

@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { aiRequest, getAddictionSupport } from "@/lib/ai/gemini";
-import { AlertTriangle, Heart, Phone } from "lucide-react";
+import { AlertTriangle, Heart } from "lucide-react";
 
 const formSchema = z.object({
   addictionType: z.string().min(1, { message: "Please specify the type of addiction." }),

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth/auth';
 
 const createModuleSchema = z.object({
@@ -9,18 +8,12 @@ const createModuleSchema = z.object({
   order: z.number().int().min(0, "Order must be a non-negative integer"),
 });
 
-interface Context {
-  params: {
-    courseId: string;
-  };
-}
-
 export async function GET(
   request: Request,
-  context: Context
+  { params }: { params: { courseId: string } }
 ) {
   try {
-    const { courseId } = context.params;
+    const { courseId } = params;
 
     const modules = await prisma.module.findMany({
       where: { courseId },
@@ -37,7 +30,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { courseId: string } }
+  context: { params: { courseId: string } }
 ) {
   try {
     const session = await auth();
@@ -45,7 +38,7 @@ export async function POST(
       return NextResponse.json({ message: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    const { courseId } = params;
+    const { courseId } = context.params;
     const body = await request.json();
     const validatedBody = createModuleSchema.parse(body);
 

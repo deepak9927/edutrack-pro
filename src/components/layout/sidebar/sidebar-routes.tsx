@@ -1,23 +1,15 @@
 import {
   BookOpen,
   LayoutDashboard,
-  ListChecks,
   Users,
   MessageSquare,
   Settings,
   LucideIcon,
   Flame,
   Brain,
-  Layout,
-  Calendar,
-  TrendingUp,
   Target,
-  Star,
   FileText,
-  Upload,
-  CheckCircle,
   Clock,
-  AlertCircle,
   Lightbulb,
   Globe
 } from "lucide-react";

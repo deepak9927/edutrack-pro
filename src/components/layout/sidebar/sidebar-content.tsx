@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { auth, signOut } from "@/lib/auth/auth";
+import { signOut } from "@/lib/auth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/constants";
 import { adminRoutes, studentRoutes, teacherRoutes } from "./sidebar-routes";
 import { usePathname, useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ interface SidebarContentProps {
 }
 
 export function SidebarContent({ role, session }: SidebarContentProps) {
-  const pathname = usePathname();
+
   const router = useRouter();
 
   let routes = [];

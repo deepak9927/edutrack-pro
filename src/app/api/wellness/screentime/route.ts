@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+
 import { auth } from '@/lib/auth/auth';
 import { saveScreenSession, aggregateLastDays } from '@/lib/wellness/service';
 

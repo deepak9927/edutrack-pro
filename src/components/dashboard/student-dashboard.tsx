@@ -313,7 +313,7 @@ export function StudentDashboard() {
          <CardContent className="p-6">
            <div className="grid gap-4 sm:gap-6">
              {courses.length > 0 ? (
-               courses.map((course, index) => (
+               courses.map((course) => (
                  <div key={course.id} className="group relative bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-700 overflow-hidden">
                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -469,7 +469,7 @@ export function StudentDashboard() {
          </CardHeader>
          <CardContent className="p-6">
            <div className="space-y-4">
-             {recentAchievements.slice(0, 5).map((achievement, index) => (
+             {recentAchievements.slice(0, 5).map((achievement) => (
                <div key={achievement.id} className="group relative bg-gradient-to-r from-white to-yellow-50/50 dark:from-gray-800 dark:to-yellow-900/20 rounded-xl p-4 border border-yellow-100 dark:border-yellow-800/30 hover:shadow-lg transition-all duration-300 hover:border-yellow-200 dark:hover:border-yellow-700/50">
                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">

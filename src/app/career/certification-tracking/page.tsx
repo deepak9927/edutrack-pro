@@ -14,7 +14,7 @@ interface Certification {
 }
 
 export default function CertificationTrackingPage() {
-  const [certifications, setCertifications] = useState<Certification[]>([
+  const certifications: Certification[] = [
     {
       id: "cert_1",
       title: "Google IT Support Professional Certificate",
@@ -29,7 +29,7 @@ export default function CertificationTrackingPage() {
       issuedDate: "2023-03-20",
       isVerified: false,
     },
-  ]);
+  ];
 
 
   return (
