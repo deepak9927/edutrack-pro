@@ -1,40 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable experimental features
-  experimental: {
-    // Turbo mode for faster builds
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-         '*.tsx': {
-           loaders: ['babel-loader'],
-           as: '*.js',
-         },
-      },
-    },
-    // Server Actions for better performance
-    serverActions: true,
-    // Optimized package imports
-    optimizePackageImports: [
-      'lucide-react',
-      'recharts',
-      '@radix-ui/react-icons',
-      'date-fns',
-    ],
-    // Parallel routes for better UX
-    parallelRoutes: true,
-    // PPR for better performance
-    ppr: true,
-  },
+  // Experimental features were removed to maintain compatibility with the
+  // stable Next.js release used in CI. If you want to enable canary/experimental
+  // features, upgrade Next.js to a matching canary version and re-introduce
+  // the required options.
 
   // TypeScript configuration
-  typescript: {
-    // Enable strict mode
-    strict: true,
-  },
+  // Keep TypeScript defaults; enabling strict mode at the project level is
+  // recommended via tsconfig.json instead of next.config.js for compatibility.
 
   // ESLint configuration
   eslint: {
@@ -274,3 +247,5 @@ const nextConfig = {
     },
   },
 };
+
+module.exports = nextConfig;

@@ -1,174 +1,398 @@
-# Database Schema Documentation
+# Database Diagram
 
-This document provides an overview of the database schema, managed using Prisma ORM. The schema is defined in `prisma/schema.prisma`.
+```mermaid
+erDiagram
+    User {
+        String id PK
+        String email UK
+        String username UK
+        String name
+        String image
+        DateTime emailVerified
+        String password
+        UserRole role
+        Boolean isActive
+        DateTime lastLogin
+        Boolean isTwoFactorEnabled
+        String bio
+        String phone
+        DateTime dateOfBirth
+        Gender gender
+        Json address
+        Json socialLinks
+        Json preferences
+        String timezone
+        String language
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-## Overview
+    Account {
+        String id PK
+        String userId FK
+        String type
+        String provider
+        String providerAccountId
+        String refresh_token
+        String access_token
+        Int expires_at
+        String token_type
+        String scope
+        String id_token
+        String session_state
+    }
 
-The database schema is designed to support a comprehensive academic management system, including user authentication, role-specific profiles (Student, Teacher, Admin), academic records (Courses, Assignments, Grades, Enrollments), wellness tracking, community features, AI interactions, and notifications.
+    Session {
+        String id PK
+        String sessionToken UK
+        String userId FK
+        DateTime expires
+    }
 
-## Key Models and Relationships
+    VerificationToken {
+        String identifier
+        String token UK
+        DateTime expires
+    }
 
-### 1. User Management & Authentication
+    TwoFactorToken {
+        String id PK
+        String email
+        String token UK
+        DateTime expires
+    }
 
-*   **`User`**: Central user model.
-    *   `id`: Unique identifier (CUID).
-    *   `email`: User's email (unique).
-    *   `username`: Optional unique username.
-    *   `role`: Enum (`STUDENT`, `TEACHER`, `ADMIN`, etc.).
-    *   `password`: Hashed password.
-    *   `isActive`: Account status.
-    *   `isTwoFactorEnabled`: 2FA status.
-    *   **Relationships**:
-        *   One-to-many with `Account` (for OAuth).
-        *   One-to-many with `Session`.
-        *   One-to-one with `Student`, `Teacher`, `Admin` profiles.
-*   **`Account`**: Stores OAuth provider account information.
-*   **`Session`**: Stores user session tokens.
-*   **`VerificationToken`**: Used for email verification.
-*   **`TwoFactorToken`**: Used for 2FA authentication.
+    Student {
+        String id PK
+        String userId FK
+        String studentId UK
+        Int semester
+        Float cgpa
+        String batch
+        String section
+        Int admissionYear
+        Int expectedGradYear
+        StudentStatus status
+        Json emergencyContact
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-### 2. Role-Specific Profiles
+    Teacher {
+        String id PK
+        String userId FK
+        String employeeId UK
+        String department
+        String designation
+        String[] qualification
+        Int experience
+        String[] expertise
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`Student`**: Extends `User` with student-specific academic and personal details.
-    *   `userId`: Foreign key to `User`.
-    *   `studentId`: Unique student identifier.
-    *   `semester`, `cgpa`, `batch`, `admissionYear`, `expectedGradYear`.
-    *   **Relationships**: Many-to-many with `Course` via `Enrollment`, `Assignment` via `Submission`, `Grade`, `AttendanceRecord`, `WellnessData`, `Achievement`, `Certification`, `SkillAssessment`, `Mentorship`, `StudyGroupMember`, `ForumPost`, `ForumComment`, `MeditationSession`, `HabitTracker`, `LearningAnalytics`, `UserAssignment`.
-*   **`Teacher`**: Extends `User` with teacher-specific professional and academic details.
-    *   `userId`: Foreign key to `User`.
-    *   `employeeId`: Unique employee identifier.
-    *   `department`, `designation`, `qualification`, `experience`, `expertise`.
-    *   **Relationships**: One-to-many with `Course`, `Assignment`, `Grade`, `Mentorship`.
-*   **`Admin`**: Extends `User` with administrative details.
-    *   `userId`: Foreign key to `User`.
-    *   `adminLevel`: Enum (`INSTITUTION`, `DEPARTMENT`, etc.).
-    *   `permissions`: JSON field for flexible permissions.
+    Admin {
+        String id PK
+        String userId FK
+        AdminLevel adminLevel
+        Json permissions
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-### 3. Academic Management
+    Course {
+        String id PK
+        String courseCode UK
+        String title
+        String description
+        Int credits
+        Int semester
+        String department
+        String syllabus
+        String[] prerequisites
+        String[] objectives
+        String teacherId FK
+        Json schedule
+        Boolean isActive
+        String academicYear
+        DateTime deletedAt
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`Course`**: Represents an academic course.
-    *   `courseCode`: Unique course identifier.
-    *   `title`, `description`, `credits`, `semester`, `department`, `academicYear`.
-    *   `teacherId`: Foreign key to `Teacher`.
-    *   `deletedAt`: For soft deletes.
-    *   **Relationships**: One-to-many with `Enrollment`, `Assignment`, `Resource`, `Announcement`, `AttendanceRecord`, `StudyGroup`.
-*   **`Enrollment`**: Links `Student` to `Course`.
-    *   `studentId`, `courseId`: Composite unique key.
-    *   `status`: Enum (`ENROLLED`, `COMPLETED`, etc.).
-    *   `midtermGrade`, `finalGrade`, `overallGrade`.
-*   **`Assignment`**: Details about an assignment for a course.
-    *   `courseId`, `teacherId`.
-    *   `dueDate`, `maxMarks`, `type`.
-    *   **Relationships**: One-to-many with `Submission`, `Grade`, `UserAssignment`.
-*   **`Submission`**: A student's submission for an assignment.
-    *   `assignmentId`, `studentId`: Composite unique key.
-    *   `content`, `attachments`, `status`.
-    *   `plagiarismScore`, `aiDetectionScore`.
-*   **`Grade`**: Records the grade a student received for an assignment.
-    *   `assignmentId`, `studentId`: Composite unique key.
-    *   `teacherId`.
-    *   `marksObtained`, `percentage`, `letterGrade`, `feedback`.
-*   **`AttendanceRecord`**: Tracks student attendance for a course on a specific date.
-    *   `studentId`, `courseId`, `date`: Composite unique key.
-    *   `status`: Enum (`PRESENT`, `ABSENT`, etc.).
-*   **`UserAssignment`**: Tracks a student's progress on an assignment.
+    Enrollment {
+        String id PK
+        String studentId FK
+        String courseId FK
+        DateTime enrollmentDate
+        EnrollmentStatus status
+        Float midtermGrade
+        Float finalGrade
+        Float overallGrade
+    }
 
-### 4. Resources & Content Management
+    Assignment {
+        String id PK
+        String title
+        String description
+        String courseId FK
+        String teacherId FK
+        AssignmentType type
+        Float maxMarks
+        String instructions
+        Json attachments
+        DateTime assignedDate
+        DateTime dueDate
+        Boolean submissionOpen
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`Resource`**: Educational materials related to a course.
-    *   `courseId`.
-    *   `fileUrl`, `fileName`, `mimeType`, `type`.
-*   **`Announcement`**: Course-specific or institution-wide announcements.
-    *   `courseId`: Optional.
-    *   `priority`: Enum (`LOW`, `MEDIUM`, `HIGH`, `URGENT`).
+    Submission {
+        String id PK
+        String assignmentId FK
+        String studentId FK
+        String content
+        Json attachments
+        DateTime submittedAt
+        Boolean isLate
+        SubmissionStatus status
+        Float plagiarismScore
+        Float aiDetectionScore
+        DateTime updatedAt
+    }
 
-### 5. Skills & Certification Management
+    Grade {
+        String id PK
+        String assignmentId FK
+        String studentId FK
+        String teacherId FK
+        Float marksObtained
+        Float maxMarks
+        Float percentage
+        String letterGrade
+        String feedback
+        Json rubricData
+        DateTime gradedAt
+        Boolean isPublished
+        DateTime updatedAt
+    }
 
-*   **`Skill`**: Defines a skill.
-    *   `name`: Unique skill name.
-    *   `category`, `difficulty`, `marketDemand`.
-*   **`SkillAssessment`**: Records a student's assessment for a skill.
-    *   `studentId`, `skillId`: Composite unique key.
-    *   `currentLevel`, `scorePercentage`.
-*   **`Certification`**: Records a student's certifications.
-    *   `studentId`, `skillId`: Optional.
-    *   `title`, `issuer`, `issuedDate`, `expiryDate`.
-*   **`Achievement`**: Tracks student achievements.
-    *   `studentId`.
-    *   `title`, `description`, `type`, `rarity`.
+    AttendanceRecord {
+        String id PK
+        String studentId FK
+        String courseId FK
+        DateTime date
+        AttendanceStatus status
+        DateTime checkedInAt
+        DateTime checkedOutAt
+        String location
+        String notes
+    }
 
-### 6. Wellness & Mental Health
+    Resource {
+        String id PK
+        String title
+        String description
+        String courseId FK
+        ResourceType type
+        String fileUrl
+        String fileName
+        Int fileSize
+        String mimeType
+        String category
+        String[] tags
+        Int downloadCount
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`WellnessData`**: Daily wellness metrics for students.
-    *   `studentId`, `date`: Composite unique key.
-    *   `moodScore`, `stressLevel`, `sleepHours`, `screenTimeMinutes`, `studyMinutes`.
-*   **`MeditationSession`**: Records student meditation sessions.
-    *   `studentId`.
-    *   `duration`, `category`.
-*   **`HabitTracker`**: Helps students track habits.
-    *   `studentId`.
-    *   `habitName`, `targetFrequency`.
-*   **`HabitCompletion`**: Records daily completion of a habit.
+    Announcement {
+        String id PK
+        String title
+        String content
+        String courseId FK
+        Priority priority
+        Boolean isPublished
+        DateTime publishedAt
+        DateTime expiresAt
+        Json attachments
+        String[] tags
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-### 7. Community & Social Features
+    Skill {
+        String id PK
+        String name UK
+        SkillCategory category
+        String description
+        DifficultyLevel difficulty
+        String[] prerequisites
+        String[] tags
+        Float marketDemand
+        Float averageSalary
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`StudyGroup`**: Facilitates student collaboration.
-    *   `courseId`: Optional.
-    *   `name`, `description`, `isPublic`.
-*   **`StudyGroupMember`**: Links `Student` to `StudyGroup`.
-*   **`StudySession`**: Scheduled sessions for study groups.
-*   **`Mentorship`**: Connects `Teacher` (mentor) with `Student` (mentee).
-    *   `mentorId`, `menteeId`: Composite unique key.
-    *   `status`, `focus`, `goals`.
-*   **`MentorshipSession`**: Records individual mentorship sessions.
-*   **`Forum`**: Top-level forum categories.
-*   **`ForumPost`**: Posts within a forum.
-    *   `forumId`, `authorId`.
-    *   `title`, `content`.
-*   **`ForumComment`**: Comments on forum posts.
-    *   `postId`, `authorId`, `parentId` (for threading).
+    SkillAssessment {
+        String id PK
+        String studentId FK
+        String skillId FK
+        SkillLevel currentLevel
+        Float scorePercentage
+        Json assessmentData
+        SkillLevel previousLevel
+        Float improvementRate
+        DateTime assessedAt
+        DateTime validUntil
+        DateTime updatedAt
+    }
 
-### 8. AI & Analytics
+    Certification {
+        String id PK
+        String studentId FK
+        String skillId FK
+        String title
+        String issuer
+        String certificationId
+        String verificationUrl
+        Boolean isVerified
+        String credentialHash
+        DateTime issuedDate
+        DateTime expiryDate
+        CertificationCategory category
+        SkillLevel level
+        String description
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`AIInteraction`**: Logs interactions with AI features.
-    *   `userId`.
-    *   `query`, `response`, `model`, `tokensUsed`.
-*   **`LearningAnalytics`**: Aggregated learning data for students.
-    *   `studentId`, `date`: Composite unique key.
-    *   `studyMinutes`, `completedTasks`, `gpaForecast`, `riskScore`.
+    Achievement {
+        String id PK
+        String studentId FK
+        String title
+        String description
+        AchievementType type
+        String iconUrl
+        String badgeColor
+        String category
+        Int points
+        RarityLevel rarity
+        Json requirements
+        Json progress
+        DateTime unlockedAt
+        Boolean isVisible
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-### 9. Notifications & System
+    WellnessData {
+        String id PK
+        String studentId FK
+        DateTime date
+        Int moodScore
+        Int stressLevel
+        Int anxietyLevel
+        Int energyLevel
+        Float sleepHours
+        Int sleepQuality
+        DateTime bedtime
+        DateTime wakeupTime
+        Int exerciseMinutes
+        Int steps
+        Int screenTimeMinutes
+        Int productiveMinutes
+        Int socialMediaMinutes
+        Int meditationMinutes
+        Int breathingExercises
+        Int studyMinutes
+        Int focusScore
+        Int pomodoroCount
+        String dailyReflection
+        String[] gratitudeNotes
+        DateTime createdAt
+        DateTime updatedAt
+    }
 
-*   **`Notification`**: Stores notifications for users.
-    *   `userId`.
-    *   `title`, `message`, `type`, `isRead`.
-*   **`SystemConfiguration`**: Stores key-value pairs for system settings.
+    AIInteraction {
+        String id PK
+        String userId FK
+        AIInteractionType type
+        String query
+        String response
+        Json context
+        String model
+        Int tokensUsed
+        Int responseTime
+        Int userRating
+        Boolean wasHelpful
+        DateTime createdAt
+    }
 
-## Enums
+    LearningAnalytics {
+        String id PK
+        String studentId FK
+        DateTime date
+        Int studyMinutes
+        Int completedTasks
+        Float averageScore
+        Int loginCount
+        Int pageViews
+        Int timeOnPlatform
+        Float gpaForecast
+        Float riskScore
+        Float engagementScore
+    }
 
-The schema utilizes various enums for consistent data representation, including:
-*   `UserRole`
-*   `Gender`
-*   `StudentStatus`
-*   `AdminLevel`
-*   `EnrollmentStatus`
-*   `AssignmentType`
-*   `SubmissionStatus`
-*   `AttendanceStatus`
-*   `ResourceType`
-*   `Priority`
-*   `SkillCategory`
-*   `DifficultyLevel`
-*   `SkillLevel`
-*   `CertificationCategory`
-*   `AchievementType`
-*   `RarityLevel`
-*   `MeditationType`
-*   `HabitCategory`
-*   `GroupRole`
-*   `SessionStatus`
-*   `MentorshipStatus`
-*   `AIInteractionType`
-*   `NotificationType`
+    Notification {
+        String id PK
+        String userId FK
+        String title
+        String message
+        NotificationType type
+        String category
+        Priority priority
+        String actionUrl
+        Boolean isRead
+        DateTime readAt
+        Json metadata
+        String imageUrl
+        DateTime scheduledAt
+        DateTime expiresAt
+        DateTime createdAt
+    }
 
-This detailed schema provides a robust foundation for the application.
+    SystemConfiguration {
+        String id PK
+        String key UK
+        Json value
+        String description
+        String category
+        Boolean isPublic
+        String dataType
+        DateTime createdAt
+        DateTime updatedAt
+    }
+
+    User ||--o{ Account : "has"
+    User ||--o{ Session : "has"
+    User ||--o{ Student : "is a"
+    User ||--o{ Teacher : "is a"
+    User ||--o{ Admin : "is a"
+    Student ||--o{ Enrollment : "has"
+    Student ||--o{ Submission : "has"
+    Student ||--o{ Grade : "has"
+    Student ||--o{ AttendanceRecord : "has"
+    Student ||--o{ WellnessData : "has"
+    Student ||--o{ Achievement : "has"
+    Course ||--o{ Enrollment : "has"
+    Course ||--o{ Assignment : "has"
+    Course ||--o{ Resource : "has"
+    Course ||--o{ Announcement : "has"
+    Course ||--o{ AttendanceRecord : "has"
+    Teacher ||--o{ Assignment : "creates"
+    Teacher ||--o{ Grade : "grades"
+    Assignment ||--o{ Submission : "has"
+    Assignment ||--o{ Grade : "has"

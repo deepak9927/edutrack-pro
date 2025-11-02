@@ -11,12 +11,10 @@ const createLessonSchema = z.object({
   order: z.number().int().min(0, "Order must be a non-negative integer"),
 });
 
-export async function GET(
-  request: Request,
-  { params }: { params: { moduleId: string } }
-) {
+export async function GET(request: Request, context: { params: Promise<{ moduleId: string }> }) {
   try {
-    const { moduleId } = params;
+    const params = await context.params;
+    const moduleId = params?.moduleId;
 
     const lessons = await prisma.lesson.findMany({
       where: { moduleId },
@@ -30,17 +28,15 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { moduleId: string } }
-) {
+export async function POST(request: Request, context: { params: Promise<{ moduleId: string }> }) {
   try {
     const session = await auth();
     if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'TEACHER')) {
       return NextResponse.json({ message: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    const { moduleId } = params;
+    const params = await context.params;
+    const moduleId = params?.moduleId;
     const body = await request.json();
     const validatedBody = createLessonSchema.parse(body);
 

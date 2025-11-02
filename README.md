@@ -1,6 +1,21 @@
 # EduTrack Pro
 
-This is a Next.js project with Prisma for database management.
+## Project Overview
+EduTrack Pro is a comprehensive educational platform designed to enhance the learning experience through personalized content, adaptive assessments, and robust progress tracking. It leverages modern web technologies to provide a scalable and interactive environment for students and educators. Key features include:
+- **Personalized Learning Paths:** Tailored content delivery based on individual student performance and preferences.
+- **Adaptive Assessments:** Dynamic quizzes and tests that adjust difficulty in real-time.
+- **Study Streak & Achievements:** Gamified elements to motivate continuous learning.
+- **AI-Powered Tutoring:** Integration with generative AI for intelligent assistance.
+- **Wellness Tracking:** Features to monitor student well-being and mood.
+
+## Technologies Used
+- **Frontend:** Next.js, React, Tailwind CSS, Radix UI
+- **Backend:** Next.js API Routes
+- **Database:** PostgreSQL (via Prisma ORM)
+- **Authentication:** NextAuth.js
+- **AI Integration:** Google Generative AI
+- **Package Manager:** pnpm
+- **Deployment:** Docker, Azure
 
 ## Setup
 
@@ -16,6 +31,23 @@ This is a Next.js project with Prisma for database management.
     ```
 
 ## Database Setup (Prisma)
+
+## Documentation
+For more detailed information, please refer to the following documents:
+- [Project Synopsis](docs/synopsis.md)
+- [Database Diagram](docs/database-diagram.md)
+- [API Documentation](docs/api-documentation.md)
+- [Architectural Overview](docs/architecture.md)
+- [Database Schema](docs/database.md)
+- [Screen Time Analytics](docs/screen-time-analytics.md)
+- [Smoke Test Workflow](docs/smoke-test-workflow.md)
+- [Wellness Module Documentation](docs/wellness/README.md)
+
+## Screenshots/Demo
+(Add screenshots or a link to a live demo here to showcase the application's features.)
+
+## Deployment
+This project is configured for deployment to Azure using Docker. Refer to [azure-deploy.md](azure-deploy.md) for detailed deployment instructions.
 
 1.  **Configure Environment Variables:**
     Create a `.env` file in the root directory and add your database connection string.

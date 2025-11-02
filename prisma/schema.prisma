@@ -200,6 +200,7 @@ model Student {
   habitTrackers      HabitTracker[]
   learningAnalytics  LearningAnalytics[]
   userAssignments    UserAssignment[] // Added UserAssignment relation
+  gratitudeEntries   GratitudeEntry[] // New relation for gratitude journal
   @@map("students")
 }
 
@@ -278,6 +279,9 @@ model Course {
   prerequisites   String[]        // Course codes
   objectives      String[]
   
+  // Pricing
+  price           Float?          // Course price (optional)
+  
   // Instructor
   teacherId       String
   teacher         Teacher         @relation(fields: [teacherId], references: [id])
@@ -302,6 +306,21 @@ model Course {
   studyGroups StudyGroup[]
   modules     Module[] // New relation for structured course content
   @@map("courses")
+}
+
+// Simple Purchase model to represent course purchases
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  amount    Float
+  currency  String   @default("USD")
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("purchases")
 }
 
 model Module {
@@ -685,6 +704,22 @@ model WellnessData {
   
   @@unique([studentId, date])
   @@map("wellness_data")
+}
+
+model GratitudeEntry {
+  id              String          @id @default(cuid())
+  studentId       String
+  date            DateTime        @db.Date
+  note            String
+
+  student         Student         @relation(fields: [studentId], references: [id])
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([studentId])
+  @@index([date])
+  @@map("gratitude_entries")
 }
 
 // Screen sessions for detailed analytics (supports anonymized entries)

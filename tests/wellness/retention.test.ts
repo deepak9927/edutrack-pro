@@ -10,7 +10,9 @@ vi.mock('@/lib/auth/admin', () => ({
 // Mock the wellness service runRetention function
 const runRetentionMock = vi.fn();
 vi.mock('@/lib/wellness/service', () => ({
-  runRetention: (...args: any[]) => runRetentionMock(...args),
+  // Avoid inline TypeScript annotations in mock factories to keep the test
+  // transformer happy. The mock simply forwards arguments to the spy.
+  runRetention: (...args: any) => runRetentionMock(...args),
 }));
 
 test('retention job delegates to runRetention (anonymizedOnly=true)', async () => {

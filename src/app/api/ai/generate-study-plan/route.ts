@@ -34,6 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid request body', errors: error.errors }, { status: 400 });
     }
 
-    return NextResponse.json({ message: 'Failed to generate study plan', success: false, error: error.message }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ message: 'Failed to generate study plan', success: false, error: errMsg }, { status: 500 });
   }
 }

@@ -1,7 +1,15 @@
 import { db } from "@/lib/db";
-import { Course, Purchase } from "@prisma/client";
+import type { Course } from "@prisma/client";
 
-type PurchaseWithCourse = Purchase & {
+// We'll infer the PurchaseWithCourse structure at runtime instead of
+// importing a Purchase type which may not exist in the generated client in all setups.
+type PurchaseWithCourse = {
+  id: string;
+  userId: string;
+  courseId: string;
+  amount: number;
+  currency?: string;
+  createdAt: Date;
   course: Course;
 };
 
@@ -13,7 +21,9 @@ const groupByCourse = (purchases: PurchaseWithCourse[]) => {
     if (!grouped[courseTitle]) {
       grouped[courseTitle] = 0;
     }
-    grouped[courseTitle] += purchase.course.price!;
+    // Use the purchase.amount field (amount paid) if present.
+    const amount = typeof purchase.amount === 'number' ? purchase.amount : 0;
+    grouped[courseTitle] += amount;
   });
 
   return grouped;
@@ -21,7 +31,11 @@ const groupByCourse = (purchases: PurchaseWithCourse[]) => {
 
 export const getAnalytics = async (userId: string) => {
   try {
-    const purchases = await db.purchase.findMany({
+    // Create a minimal typed view of the `db` object for the queries we
+    // need here so we avoid a blanket `any` cast which ESLint flags.
+  type DBWithPurchase = { purchase: { findMany: (opts: unknown) => Promise<PurchaseWithCourse[]> } };
+  const dbWithPurchase = db as unknown as DBWithPurchase;
+    const purchases = await dbWithPurchase.purchase.findMany({
       where: {
         course: {
           userId: userId

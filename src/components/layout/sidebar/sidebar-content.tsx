@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { signOut } from "@/lib/auth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/lib/constants";
 import { adminRoutes, studentRoutes, teacherRoutes } from "./sidebar-routes";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { Session } from "next-auth";

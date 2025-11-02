@@ -22,12 +22,14 @@ export const models = {
 };
 
 // Type definitions for better TypeScript support
-export interface AIResponse {
-  success: boolean;
-  data?: string;
-  error?: string;
-  tokensUsed?: number;
-}
+import { handleAIError, logAISuccess } from '../utils/ai-error-handler';
+import type { EnhancedAIResponse } from '../utils/ai-error-handler';
+
+// Re-export as a type alias for compatibility
+export type AIResponse = EnhancedAIResponse;
+
+// Type definitions for better TypeScript support
+// The AIResponse interface is now EnhancedAIResponse from ai-error-handler.ts
 
 export interface StudyPlanRequest {
   selectedCourses: string[]; // IDs of selected courses
@@ -87,9 +89,9 @@ export interface AddictionSupportRequest {
 /**
  * Generate personalized study plan using AI
  */
-export async function generateStudyPlan(request: StudyPlanRequest): Promise<AIResponse> {
+export async function generateStudyPlan(request: StudyPlanRequest): Promise<EnhancedAIResponse> {
   if (!process.env.GEMINI_API_KEY) {
-    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env." };
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
   }
   try {
     const prompt = `
@@ -117,18 +119,19 @@ export async function generateStudyPlan(request: StudyPlanRequest): Promise<AIRe
     `;
 
     const result = await models.pro.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
+
+    logAISuccess('generateStudyPlan', usage?.totalTokenCount);
     
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Study Plan Error:', error);
-    return {
-      success: false,
-      error: 'Failed to generate study plan. Please try again later.'
-    };
+    return handleAIError('generateStudyPlan', error, 'Failed to generate study plan. Please try again later.');
   }
 }
 
@@ -139,9 +142,9 @@ export async function getAssignmentHelp(
   subject: string,
   topic: string,
   specificQuestion: string
-): Promise<AIResponse> {
+): Promise<EnhancedAIResponse> {
   if (!process.env.GEMINI_API_KEY) {
-    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env." };
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
   }
   try {
     const prompt = `
@@ -162,18 +165,19 @@ export async function getAssignmentHelp(
     `;
 
     const result = await models.flash.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
+
+    logAISuccess('getAssignmentHelp', usage?.totalTokenCount);
     
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Assignment Help Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get assignment help. Please try again later.'
-    };
+    return handleAIError('getAssignmentHelp', error, 'Failed to get assignment help. Please try again later.');
   }
 }
 
@@ -184,9 +188,9 @@ export async function analyzeCode(
   code: string,
   language: string,
   purpose: string
-): Promise<AIResponse> {
+): Promise<EnhancedAIResponse> {
   if (!process.env.GEMINI_API_KEY) {
-    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env." };
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
   }
   try {
     const prompt = `
@@ -211,18 +215,19 @@ export async function analyzeCode(
     `;
 
     const result = await models.pro.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
+
+    logAISuccess('analyzeCode', usage?.totalTokenCount);
     
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Code Analysis Error:', error);
-    return {
-      success: false,
-      error: 'Failed to analyze code. Please try again later.'
-    };
+    return handleAIError('analyzeCode', error, 'Failed to analyze code. Please try again later.');
   }
 }
 
@@ -233,9 +238,9 @@ export async function analyzeCode(
 /**
  * Get personalized career guidance
  */
-export async function getCareerGuidance(request: CareerGuidanceRequest): Promise<AIResponse> {
+export async function getCareerGuidance(request: CareerGuidanceRequest): Promise<EnhancedAIResponse> {
   if (!process.env.GEMINI_API_KEY) {
-    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env." };
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
   }
   try {
     const prompt = `
@@ -259,18 +264,19 @@ export async function getCareerGuidance(request: CareerGuidanceRequest): Promise
     `;
 
     const result = await models.pro.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
+
+    logAISuccess('getCareerGuidance', usage?.totalTokenCount);
     
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Career Guidance Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get career guidance. Please try again later.'
-    };
+    return handleAIError('getCareerGuidance', error, 'Failed to get career guidance. Please try again later.');
   }
 }
 
@@ -278,10 +284,13 @@ export async function getCareerGuidance(request: CareerGuidanceRequest): Promise
  * Generate resume suggestions
  */
 export async function getResumeAdvice(
-  skills: string[], 
-  experience: string, 
+  skills: string[],
+  experience: string,
   targetRole: string
-): Promise<AIResponse> {
+): Promise<EnhancedAIResponse> {
+  if (!process.env.GEMINI_API_KEY) {
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
+  }
   try {
     const prompt = `
     Provide resume optimization advice for a BCA student:
@@ -303,18 +312,19 @@ export async function getResumeAdvice(
     `;
 
     const result = await models.flash.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
+
+    logAISuccess('getResumeAdvice', usage?.totalTokenCount);
     
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Resume Advice Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get resume advice. Please try again later.'
-    };
+    return handleAIError('getResumeAdvice', error, 'Failed to get resume advice. Please try again later.');
   }
 }
 
@@ -325,7 +335,10 @@ export async function getResumeAdvice(
 /**
  * Get AI-powered wellness advice
  */
-export async function getWellnessAdvice(request: WellnessAdviceRequest): Promise<AIResponse> {
+export async function getWellnessAdvice(request: WellnessAdviceRequest): Promise<EnhancedAIResponse> {
+  if (!process.env.GEMINI_API_KEY) {
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
+  }
   try {
     const prompt = `
     Provide wellness advice for a BCA student:
@@ -348,18 +361,19 @@ export async function getWellnessAdvice(request: WellnessAdviceRequest): Promise
     `;
 
     const result = await models.flash.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
+
+    logAISuccess('getWellnessAdvice', usage?.totalTokenCount);
     
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Wellness Advice Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get wellness advice. Please try again later.'
-    };
+    return handleAIError('getWellnessAdvice', error, 'Failed to get wellness advice. Please try again later.');
   }
 }
 
@@ -369,7 +383,10 @@ export async function getWellnessAdvice(request: WellnessAdviceRequest): Promise
 export async function getMotivationalAdvice(
   currentMood: string,
   challenges: string[]
-): Promise<AIResponse> {
+): Promise<EnhancedAIResponse> {
+  if (!process.env.GEMINI_API_KEY) {
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
+  }
   try {
     const prompt = `
     Provide motivational support for a BCA student:
@@ -389,18 +406,19 @@ export async function getMotivationalAdvice(
     `;
 
     const result = await models.flash.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
 
+    logAISuccess('getMotivationalAdvice', usage?.totalTokenCount);
+    
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Motivational Advice Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get motivational advice. Please try again later.'
-    };
+    return handleAIError('getMotivationalAdvice', error, 'Failed to get motivational advice. Please try again later.');
   }
 }
 
@@ -411,7 +429,10 @@ export async function getMotivationalAdvice(
 /**
  * Get personalized skill recommendations using AI
  */
-export async function getSkillRecommendations(request: SkillRecommendationRequest): Promise<AIResponse> {
+export async function getSkillRecommendations(request: SkillRecommendationRequest): Promise<EnhancedAIResponse> {
+  if (!process.env.GEMINI_API_KEY) {
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
+  }
   try {
     const prompt = `
     Provide personalized skill recommendations for a BCA student:
@@ -436,25 +457,29 @@ export async function getSkillRecommendations(request: SkillRecommendationReques
     `;
 
     const result = await models.pro.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
 
+    logAISuccess('getSkillRecommendations', usage?.totalTokenCount);
+    
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Skill Recommendations Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get skill recommendations. Please try again later.'
-    };
+    return handleAIError('getSkillRecommendations', error, 'Failed to get skill recommendations. Please try again later.');
   }
 }
 
 /**
  * Generate daily growth challenges and actionable tips
  */
-export async function getDailyChallenges(request: DailyChallengeRequest): Promise<AIResponse> {
+export async function getDailyChallenges(request: DailyChallengeRequest): Promise<EnhancedAIResponse> {
+  if (!process.env.GEMINI_API_KEY) {
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
+  }
   try {
     const prompt = `
     Generate personalized daily growth challenges and actionable tips for a BCA student:
@@ -480,27 +505,28 @@ export async function getDailyChallenges(request: DailyChallengeRequest): Promis
     `;
 
     const result = await models.pro.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
 
+    logAISuccess('getDailyChallenges', usage?.totalTokenCount);
+    
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Daily Challenges Error:', error);
-    return {
-      success: false,
-      error: 'Failed to generate daily challenges. Please try again later.'
-    };
+    return handleAIError('getDailyChallenges', error, 'Failed to generate daily challenges. Please try again later.');
   }
 }
 
 /**
  * Provide addiction support with trigger identification and coping strategies
  */
-export async function getAddictionSupport(request: AddictionSupportRequest): Promise<AIResponse> {
+export async function getAddictionSupport(request: AddictionSupportRequest): Promise<EnhancedAIResponse> {
   if (!process.env.GEMINI_API_KEY) {
-    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env." };
+    return { success: false, error: "Gemini API key missing. Please set GEMINI_API_KEY in .env.", errorCode: "MISSING_API_KEY" };
   }
   try {
     const prompt = `
@@ -529,18 +555,19 @@ export async function getAddictionSupport(request: AddictionSupportRequest): Pro
     `;
 
     const result = await models.pro.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
+    const text = response.text();
+    const usage = result.usageMetadata;
 
+    logAISuccess('getAddictionSupport', usage?.totalTokenCount);
+    
     return {
       success: true,
-      data: response.text()
+      data: text,
+      tokensUsed: usage?.totalTokenCount
     };
   } catch (error) {
-    console.error('AI Addiction Support Error:', error);
-    return {
-      success: false,
-      error: 'Failed to get addiction support. Please try again later.'
-    };
+    return handleAIError('getAddictionSupport', error, 'Failed to get addiction support. Please try again later.');
   }
 }
 
@@ -615,10 +642,10 @@ export const aiCache = new AICache();
  * Wrapper function with rate limiting and caching
  */
 export async function aiRequest(
-  aiFunction: () => Promise<AIResponse>,
+  aiFunction: () => Promise<EnhancedAIResponse>,
   cacheKey?: string,
   useCache: boolean = true
-): Promise<AIResponse> {
+): Promise<EnhancedAIResponse> {
   // Check cache first if enabled
   if (useCache && cacheKey) {
     const cached = aiCache.get(cacheKey);
@@ -632,7 +659,9 @@ export async function aiRequest(
     const nextAvailable = rateLimiter.getNextAvailableTime();
     return {
       success: false,
-      error: `Rate limit exceeded. Try again after ${nextAvailable.toLocaleTimeString()}`
+      error: `Rate limit exceeded. Please try again after ${nextAvailable.toLocaleTimeString()}.`,
+      errorCode: "RATE_LIMIT_EXCEEDED",
+      details: { nextAvailableTime: nextAvailable.toISOString() }
     };
   }
 
@@ -646,11 +675,7 @@ export async function aiRequest(
 
     return result;
   } catch (error) {
-    console.error("AI Request Error:", error);
-    return {
-      success: false,
-      error: "An unexpected error occurred. Please try again."
-    };
+    return handleAIError('aiRequestWrapper', error, 'An unexpected error occurred during AI request. Please try again.');
   }
 }
 

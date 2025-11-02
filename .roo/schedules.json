@@ -1,0 +1,39 @@
+{
+  "schedules": [
+    {
+      "id": "1761141855229",
+      "name": "features",
+      "mode": "code",
+      "taskInstructions": "do some code features and documentation to impress recuiters and freelance clients aslo make sure to write tests for api chevk it if they are working and any feature implementation left",
+      "scheduleType": "time",
+      "timeInterval": "10",
+      "timeUnit": "minute",
+      "selectedDays": {
+        "sun": true,
+        "mon": true,
+        "tue": true,
+        "wed": true,
+        "thu": true,
+        "fri": true,
+        "sat": true
+      },
+      "startDate": "",
+      "startHour": "",
+      "startMinute": "00",
+      "expirationDate": "",
+      "expirationHour": "00",
+      "expirationMinute": "00",
+      "requireActivity": true,
+      "active": true,
+      "taskInteraction": "wait",
+      "inactivityDelay": "10",
+      "lastExecutionTime": "2025-10-23T05:59:32.771Z",
+      "lastSkippedTime": "2025-10-23T05:47:00.297Z",
+      "lastTaskId": "724b8465-2ba5-488f-9f56-26e429c43625",
+      "nextExecutionTime": "2025-11-02T03:29:00.771Z",
+      "modeDisplayName": "Code",
+      "createdAt": "2025-10-22T14:04:15.227Z",
+      "updatedAt": "2025-10-22T14:04:15.227Z"
+    }
+  ]
+}

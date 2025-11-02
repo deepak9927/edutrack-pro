@@ -136,6 +136,34 @@ This document outlines the backend API routes, their functionalities, and expect
         }
         ```
 
+### `GET /api/courses/[courseId]`
+
+*   **Purpose:** Retrieves a specific course by ID.
+*   **Method:** `GET`
+*   **URL Parameters:** `courseId` (string) - The ID of the course.
+*   **Request Body:** None
+*   **Response:**
+    *   **Success (200 OK):** The course object.
+        ```json
+        {
+            "id": "string",
+            "title": "string",
+            "description": "string",
+            "imageUrl": "string",
+            "price": "number",
+            "isPublished": "boolean",
+            "categoryId": "string",
+            "createdAt": "Date",
+            "updatedAt": "Date"
+        }
+        ```
+    *   **Error (404 Not Found / 500 Internal Server Error):**
+        ```json
+        {
+            "error": "Error message"
+        }
+        ```
+
 ---
 
 ## 3. Wellness Routes

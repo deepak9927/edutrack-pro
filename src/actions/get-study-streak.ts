@@ -31,8 +31,10 @@ export async function getStudyStreak(userId?: string): Promise<number> {
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
 
-    // Check if the most recent study day is today or yesterday
-    const mostRecentEntryDate = new Date(wellnessData[0].date);
+  // Check if the most recent study day is today or yesterday
+  // We already returned if wellnessData.length === 0 above, so this is safe.
+  const mostRecent = wellnessData[0]!;
+  const mostRecentEntryDate = new Date(String(mostRecent.date));
     mostRecentEntryDate.setHours(0, 0, 0, 0);
 
     if (
@@ -46,7 +48,8 @@ export async function getStudyStreak(userId?: string): Promise<number> {
     let lastDate = mostRecentEntryDate;
 
     for (let i = 1; i < wellnessData.length; i++) {
-      const currentDate = new Date(wellnessData[i].date);
+      const entry = wellnessData[i]!;
+        const currentDate = new Date(String(entry.date));
       currentDate.setHours(0, 0, 0, 0);
 
       const expectedDate = new Date(lastDate);
